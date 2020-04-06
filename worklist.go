@@ -5,14 +5,12 @@ import (
 	"sync"
 )
 
-//WorkList work list
 type WorkList struct {
-	works *SyncQueue
-	pool  *WorkPool
+	works *util.SyncQueue
+	pool  *util.WorkPool
 	wg    sync.WaitGroup
 }
 
-//NewWorkList new WorList
 func NewWorkList(maxGoroutines int) *WorkList {
 	w := &WorkList{
 		works: util.NewSyncQueue(),
@@ -26,7 +24,6 @@ func NewWorkList(maxGoroutines int) *WorkList {
 	return w
 }
 
-//Push push a work to list
 func (w *WorkList) Push(f func()) {
 	w.works.Push(f)
 }
@@ -40,7 +37,6 @@ func (w *WorkList) SyncProc() int {
 	return len(fs)
 }
 
-//Proc proc work
 func (w *WorkList) Proc() {
 	defer w.wg.Done()
 	for {
@@ -52,7 +48,6 @@ func (w *WorkList) Proc() {
 	}
 }
 
-//Close close queue
 func (w *WorkList) Close() {
 	w.works.Close()
 	w.wg.Wait()
