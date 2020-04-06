@@ -1,8 +1,9 @@
 package svr_core
 
 import (
-	"svr_core/util"
 	"sync"
+
+	"github.com/hhq163/svr_core/util"
 )
 
 type WorkList struct {

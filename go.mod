@@ -1,4 +1,4 @@
-module svr_core
+module github.com/hhq163/svr_core
 
 go 1.13
 

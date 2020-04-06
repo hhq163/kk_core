@@ -1,8 +1,9 @@
-package util_test
+package svr_core
 
 import (
-	"mangos/util"
 	"testing"
+
+	"github.com/svr_core/util"
 )
 
 func Benchmark_worklist(b *testing.B) {
