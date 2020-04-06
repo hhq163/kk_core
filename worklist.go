@@ -1,6 +1,9 @@
-package util
+package svr_core
 
-import "sync"
+import (
+	"svr_core/util"
+	"sync"
+)
 
 //WorkList work list
 type WorkList struct {
@@ -12,10 +15,10 @@ type WorkList struct {
 //NewWorkList new WorList
 func NewWorkList(maxGoroutines int) *WorkList {
 	w := &WorkList{
-		works: NewSyncQueue(),
+		works: util.NewSyncQueue(),
 	}
 	if maxGoroutines > 0 {
-		w.pool = NewWorkPool(maxGoroutines)
+		w.pool = util.NewWorkPool(maxGoroutines)
 		w.wg.Add(1)
 		go w.Proc()
 	}
