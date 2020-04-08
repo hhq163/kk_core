@@ -1,19 +1,17 @@
 package util
 
-import (
-	"sync"
-)
+import "sync"
 
-type Worker func()
+type Task func()
 
-type WorkPool struct {
-	work chan Worker
+type WorkerPool struct {
+	work chan Task
 	wg   sync.WaitGroup
 }
 
-func NewWorkPool(maxGoroutines int) *WorkPool {
-	p := WorkPool{
-		work: make(chan Worker),
+func NewWorkerPool(maxGoroutines int) *WorkerPool {
+	p := WorkerPool{
+		work: make(chan Task),
 	}
 	p.wg.Add(maxGoroutines)
 	for i := 0; i < maxGoroutines; i++ {
@@ -24,12 +22,14 @@ func NewWorkPool(maxGoroutines int) *WorkPool {
 			p.wg.Done()
 		}()
 	}
+
 	return &p
 }
-func (p *WorkPool) Run(w Worker) {
+
+func (p *WorkerPool) Run(w Task) {
 	p.work <- w
 }
-func (p *WorkPool) Shutdown() {
+func (p *WorkerPool) Shutdown() {
 	close(p.work)
 	p.wg.Wait()
 }
