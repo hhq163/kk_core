@@ -1,9 +1,12 @@
 package svr_core
 
 import (
+	"context"
 	"sync"
 
+	"github.com/go-redis/redis"
 	"github.com/hhq163/svr_core/util"
+	"gopkg.in/mgo.v2"
 )
 
 type WorkerListWithClient struct {
@@ -29,11 +32,26 @@ func (w *WorkerListWithClient) Push(f func(i interface{})) {
 	w.works.Push(f)
 }
 
-func (w *WorkerListWithClient) SyncProc() int {
+func (w *WorkerListWithClient) SyncProc(c interface{}) int {
 	fs, _ := w.works.TryPopAll()
-	for _, f := range fs {
-		f.(func(c interface{}))(false)
+
+	if client, ok := c.(*redis.ClusterClient); ok {
+		cClient := client.WithContext(context.Background())
+		for _, f := range fs {
+			f.(func(c interface{}))(cClient)
+		}
+	} else if client, ok := c.(*redis.Client); ok {
+		cClient := client.WithContext(context.Background())
+		for _, f := range fs {
+			f.(func(c interface{}))(cClient)
+		}
+	} else if client, ok := c.(*mgo.Session); ok {
+		cClient := client.Clone()
+		for _, f := range fs {
+			f.(func(c interface{}))(cClient)
+		}
 	}
+
 	return len(fs)
 }
 
