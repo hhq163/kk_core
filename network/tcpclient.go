@@ -1,10 +1,11 @@
 package network
 
 import (
-	"mangos/core/slog"
 	"net"
 	"sync"
 	"time"
+
+	"github.com/hhq163/svr_core/base"
 )
 
 type TCPClient struct {
@@ -40,17 +41,17 @@ func (client *TCPClient) init() {
 
 	if client.ConnNum <= 0 {
 		client.ConnNum = 1
-		slog.Info("invalid ConnNum, reset to ", client.ConnNum)
+		base.Log.Info("invalid ConnNum, reset to ", client.ConnNum)
 	}
 	if client.ConnectInterval <= 0 {
 		client.ConnectInterval = 3 * time.Second
-		slog.Info("invalid ConnectInterval, reset to ", client.ConnectInterval)
+		base.Log.Info("invalid ConnectInterval, reset to ", client.ConnectInterval)
 	}
 	if client.NewAgent == nil {
-		slog.Fatal("NewAgent must not be nil")
+		base.Log.Fatal("NewAgent must not be nil")
 	}
 	if client.conns != nil {
-		slog.Fatal("client is running")
+		base.Log.Fatal("client is running")
 	}
 
 	client.conns = make(ConnSet)
@@ -64,7 +65,7 @@ func (client *TCPClient) dial() net.Conn {
 			return conn
 		}
 
-		slog.Info("connect to ", client.Addr, " error: ", err)
+		base.Log.Info("connect to ", client.Addr, " error: ", err)
 		time.Sleep(client.ConnectInterval)
 		continue
 	}

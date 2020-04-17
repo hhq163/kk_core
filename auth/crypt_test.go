@@ -5,8 +5,9 @@ import (
 	"crypto/sha1"
 	"encoding/binary"
 	"fmt"
-	"mangos/auth"
 	"testing"
+
+	"github.com/hhq163/svr_core/auth"
 )
 
 //加解密测试
