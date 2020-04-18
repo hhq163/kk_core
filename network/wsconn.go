@@ -4,12 +4,13 @@ import (
 	"bytes"
 	"encoding/binary"
 	"errors"
-	"mangos/common"
-	"mangos/core/auth"
-	"mangos/core/slog"
-	"mangos/core/util"
 	"net"
 	"sync/atomic"
+
+	"github.com/hhq163/svr_core/auth"
+	"github.com/hhq163/svr_core/base"
+	"github.com/hhq163/svr_core/common"
+	"github.com/hhq163/svr_core/util"
 
 	"github.com/gorilla/websocket"
 )
@@ -41,7 +42,7 @@ func newWSConn(conn *websocket.Conn, maxMsgLen uint32) *WSConn {
 				if ok {
 					err := conn.WriteMessage(websocket.BinaryMessage, buf)
 					if err != nil {
-						slog.Info(err)
+						base.Log.Info(err)
 						goto closeSocket
 					}
 				}

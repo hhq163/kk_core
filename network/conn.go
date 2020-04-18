@@ -1,8 +1,9 @@
 package network
 
 import (
-	"mangos/common"
 	"net"
+
+	"github.com/hhq163/svr_core/common"
 )
 
 type Conn interface {

@@ -7,8 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"mangos/core/slog"
-
+	"github.com/hhq163/svr_core/base"
 	"github.com/gorilla/websocket"
 )
 
@@ -43,7 +42,7 @@ func (handler *WSHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	conn, err := handler.upgrader.Upgrade(w, r, header)
 	if err != nil {
-		slog.Warn("upgrade error: ", err)
+		base.Log.Warn("upgrade error: ", err)
 		return
 	}
 	conn.SetReadLimit(int64(handler.maxMsgLen))
@@ -60,7 +59,7 @@ func (handler *WSHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if len(handler.conns) >= handler.maxConnNum {
 		handler.mutexConns.Unlock()
 		conn.Close()
-		slog.Warn("too many connections")
+		base.Log.Warn("too many connections")
 		return
 	}
 	handler.conns[conn] = struct{}{}
@@ -80,23 +79,23 @@ func (handler *WSHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func (server *WSServer) Start() {
 	ln, err := net.Listen("tcp", server.Addr)
 	if err != nil {
-		slog.Fatal(err)
+		base.Log.Fatal(err)
 	}
 
 	if server.MaxConnNum <= 0 {
 		server.MaxConnNum = 10000
-		slog.Info("invalid MaxConnNum, reset to ", server.MaxConnNum)
+		base.Log.Info("invalid MaxConnNum, reset to ", server.MaxConnNum)
 	}
 	if server.MaxMsgLen <= 0 {
 		server.MaxMsgLen = 4096
-		slog.Info("invalid MaxMsgLen, reset to ", server.MaxMsgLen)
+		base.Log.Info("invalid MaxMsgLen, reset to ", server.MaxMsgLen)
 	}
 	if server.HTTPTimeout <= 0 {
 		server.HTTPTimeout = 10 * time.Second
-		slog.Info("invalid HTTPTimeout, reset to ", server.HTTPTimeout)
+		base.Log.Info("invalid HTTPTimeout, reset to ", server.HTTPTimeout)
 	}
 	if server.NewAgent == nil {
-		slog.Fatal("NewAgent must not be nil")
+		base.Log.Fatal("NewAgent must not be nil")
 	}
 	if server.CertFile != "" || server.KeyFile != "" {
 		config := &tls.Config{}
@@ -106,7 +105,7 @@ func (server *WSServer) Start() {
 		config.Certificates = make([]tls.Certificate, 1)
 		config.Certificates[0], err = tls.LoadX509KeyPair(server.CertFile, server.KeyFile)
 		if err != nil {
-			slog.Fatal(err)
+			base.Log.Fatal(err)
 		}
 
 		ln = tls.NewListener(ln, config)

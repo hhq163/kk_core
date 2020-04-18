@@ -6,18 +6,18 @@ import (
 	"github.com/hhq163/svr_core/util"
 )
 
-type WorkList struct {
+type WorkerList struct {
 	works *util.SyncQueue
-	pool  *util.WorkPool
+	pool  *util.WorkerPool
 	wg    sync.WaitGroup
 }
 
-func NewWorkList(maxGoroutines int) *WorkList {
-	w := &WorkList{
+func NewWorkerList(maxGoroutines int) *WorkerList {
+	w := &WorkerList{
 		works: util.NewSyncQueue(),
 	}
 	if maxGoroutines > 0 {
-		w.pool = util.NewWorkPool(maxGoroutines)
+		w.pool = util.NewWorkerPool(maxGoroutines)
 		w.wg.Add(1)
 		go w.Proc()
 	}
@@ -25,12 +25,12 @@ func NewWorkList(maxGoroutines int) *WorkList {
 	return w
 }
 
-func (w *WorkList) Push(f func()) {
+func (w *WorkerList) Push(f func(i interface{})) {
 	w.works.Push(f)
 }
 
 //SyncProc proc all work
-func (w *WorkList) SyncProc() int {
+func (w *WorkerList) SyncProc() int {
 	fs, _ := w.works.TryPopAll()
 	for _, f := range fs {
 		f.(func())()
@@ -38,7 +38,7 @@ func (w *WorkList) SyncProc() int {
 	return len(fs)
 }
 
-func (w *WorkList) Proc() {
+func (w *WorkerList) Proc() {
 	defer w.wg.Done()
 	for {
 		f := w.works.Pop()
@@ -49,7 +49,7 @@ func (w *WorkList) Proc() {
 	}
 }
 
-func (w *WorkList) Close() {
+func (w *WorkerList) Close() {
 	w.works.Close()
 	w.wg.Wait()
 	if w.pool != nil {

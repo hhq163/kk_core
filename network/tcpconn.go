@@ -5,14 +5,16 @@ import (
 	"encoding/binary"
 	"errors"
 	"io"
-	"mangos/common"
-	"mangos/core/auth"
-	"mangos/core/slog"
 	"net"
 	"sync/atomic"
 	"time"
 
-	"mangos/core/util"
+	"log"
+
+	"github.com/hhq163/svr_core/auth"
+	"github.com/hhq163/svr_core/common"
+
+	"github.com/hhq163/svr_core/util"
 )
 
 //ConnSet server conn map
@@ -52,7 +54,7 @@ func newTCPConn(conn net.Conn, maxMsgLen uint32) *TCPConn {
 			if tmp.Len() != 0 {
 				_, err := conn.Write(tmp.Bytes())
 				if err != nil {
-					slog.Info(err)
+					log.Print(err.Error())
 					goto closeSocket
 				}
 			}

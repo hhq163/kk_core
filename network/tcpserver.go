@@ -1,10 +1,11 @@
 package network
 
 import (
-	"mangos/core/slog"
 	"net"
 	"sync"
 	"time"
+
+	"github.com/hhq163/svr_core/base"
 )
 
 //TCPServer TCP server manager
@@ -29,15 +30,15 @@ func (server *TCPServer) Start() {
 func (server *TCPServer) init() {
 	ln, err := net.Listen("tcp", server.Addr)
 	if err != nil {
-		slog.Fatal(err)
+		base.Log.Fatal(err)
 	}
 
 	if server.MaxConnNum <= 0 {
 		server.MaxConnNum = 10000
-		slog.Info("invalid MaxConnNum, reset to ", server.MaxConnNum)
+		base.Log.Info("invalid MaxConnNum, reset to ", server.MaxConnNum)
 	}
 	if server.NewAgent == nil {
-		slog.Fatal("NewAgent must not be nil")
+		base.Log.Fatal("NewAgent must not be nil")
 	}
 
 	server.ln = ln
@@ -61,7 +62,7 @@ func (server *TCPServer) run() {
 				if max := 1 * time.Second; tempDelay > max {
 					tempDelay = max
 				}
-				slog.Info("accept error: ", err, "; retrying in ", tempDelay)
+				base.Log.Info("accept error: ", err, "; retrying in ", tempDelay)
 				time.Sleep(tempDelay)
 				continue
 			}
@@ -73,7 +74,7 @@ func (server *TCPServer) run() {
 		if len(server.conns) >= server.MaxConnNum {
 			server.mutexConns.Unlock()
 			conn.Close()
-			slog.Warn("too many connections")
+			base.Log.Warn("too many connections")
 			continue
 		}
 		server.conns[conn] = struct{}{}
