@@ -95,14 +95,15 @@ func (tcpConn *TCPConn) RemoteAddr() net.Addr {
 }
 
 func (tcpConn *TCPConn) ReadMsg() (*common.WorldPacket, error) {
-	b := make([]byte, 4)
+	headbuf := make([]byte, 5)
 	// read len
-	if _, err := io.ReadFull(tcpConn, b); err != nil {
+	if _, err := io.ReadFull(tcpConn, headbuf); err != nil {
 		return nil, err
 	}
-	tcpConn.Crypt.DecryptRecv(b)
-	msgLen := uint32(binary.LittleEndian.Uint16(b[:2]))
-	opCode := binary.LittleEndian.Uint16(b[2:])
+	tcpConn.Crypt.DecryptRecv(headbuf)
+	msgLen := uint32(binary.LittleEndian.Uint16(headbuf[:2]))
+	opCode := binary.LittleEndian.Uint16(headbuf[2:5])
+	ver := binary.LittleEndian.Uint16(headbuf[5:]) //版本号
 	// check len
 	if msgLen > tcpConn.maxMsgLen {
 		return nil, errors.New("message too long")
@@ -111,8 +112,8 @@ func (tcpConn *TCPConn) ReadMsg() (*common.WorldPacket, error) {
 	}
 
 	// data
-	if msgLen > 4 {
-		msgData := make([]byte, msgLen-4)
+	if msgLen > 5 {
+		msgData := make([]byte, msgLen-5)
 		if _, err := io.ReadFull(tcpConn, msgData); err != nil {
 			return nil, err
 		}
@@ -132,7 +133,7 @@ func (tcpConn *TCPConn) WriteMsg(packet *common.WorldPacket) error {
 		return errors.New("socket is closed")
 	}
 	// get len
-	msgLen := uint16(packet.Len() + 4)
+	msgLen := uint16(packet.Len() + 5)
 	header := new(bytes.Buffer)
 	binary.Write(header, binary.LittleEndian, msgLen)
 	binary.Write(header, binary.LittleEndian, packet.GetOpCode())
@@ -146,7 +147,7 @@ func (tcpConn *TCPConn) DirectWriteMsg(packet *common.WorldPacket) error {
 		return errors.New("socket is closed")
 	}
 	// get len
-	msgLen := uint16(packet.Len() + 4)
+	msgLen := uint16(packet.Len() + 5)
 	header := new(bytes.Buffer)
 	binary.Write(header, binary.LittleEndian, msgLen)
 	binary.Write(header, binary.LittleEndian, packet.GetOpCode())

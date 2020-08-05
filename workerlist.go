@@ -25,11 +25,11 @@ func NewWorkerList(maxGoroutines int) *WorkerList {
 	return w
 }
 
-func (w *WorkerList) Push(f func(i interface{})) {
+func (w *WorkerList) Push(f func()) {
 	w.works.Push(f)
 }
 
-//SyncProc proc all work
+//SyncProc 执行所有任务
 func (w *WorkerList) SyncProc() int {
 	fs, _ := w.works.TryPopAll()
 	for _, f := range fs {

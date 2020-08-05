@@ -7,8 +7,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/hhq163/svr_core/base"
 	"github.com/gorilla/websocket"
+	"github.com/hhq163/svr_core/base"
 )
 
 type WSServer struct {

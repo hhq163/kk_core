@@ -3,6 +3,7 @@ package util
 import (
 	"crypto/md5"
 	"fmt"
+	"hash/crc32"
 	"io"
 )
 
@@ -32,20 +33,6 @@ func MD5(data string) string {
 	return fmt.Sprintf("%x", t.Sum(nil))
 }
 
-//将游戏前端登录类型转换成web后台维护类型
-func ConvertLoginDeviceId(loginType uint8) int {
-	deviceType := 0
-	switch loginType {
-	case 0: // PC_FLASH
-		deviceType = 1
-	case 3:
-		deviceType = 2
-	case 1:
-		deviceType = 3
-	case 5, 6: // NEW_APP密码登录和手势登录
-		deviceType = 3
-	case 4: // PC_H5
-		deviceType = 1
-	}
-	return deviceType
+func CRC32(str string) uint32 {
+	return crc32.ChecksumIEEE([]byte(str))
 }

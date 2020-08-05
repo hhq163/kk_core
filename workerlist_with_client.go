@@ -1,14 +1,35 @@
 package svr_core
 
 import (
-	"context"
 	"sync"
 
-	"github.com/go-redis/redis"
 	"github.com/hhq163/svr_core/util"
-	"gopkg.in/mgo.v2"
 )
 
+//根据uid进行投递任务，同一用户任务顺序执行
+type WorkerGroup struct {
+	WorkGroup []*WorkerListWithClient
+	Length    int
+}
+
+func NewWorkGroup(groupNum int, c interface{}) *WorkerGroup {
+	wg := &WorkerGroup{
+		WorkGroup: make([]*WorkerListWithClient, groupNum),
+		Length:    groupNum,
+	}
+	for k := range wg.WorkGroup {
+		wg.WorkGroup[k] = NewWorkerListWithClient(1, c)
+	}
+
+	return wg
+}
+
+func (wg *WorkerGroup) Push(uid int, f func(i interface{})) {
+	index := uid % wg.Length
+	wg.WorkGroup[index].Push(f)
+}
+
+//在协程池中使用固定db连接
 type WorkerListWithClient struct {
 	works *util.SyncQueue
 	pool  *util.WorkerPoolWithClient
@@ -32,26 +53,11 @@ func (w *WorkerListWithClient) Push(f func(i interface{})) {
 	w.works.Push(f)
 }
 
-func (w *WorkerListWithClient) SyncProc(c interface{}) int {
+func (w *WorkerListWithClient) SyncProc() int {
 	fs, _ := w.works.TryPopAll()
-
-	if client, ok := c.(*redis.ClusterClient); ok {
-		cClient := client.WithContext(context.Background())
-		for _, f := range fs {
-			f.(func(c interface{}))(cClient)
-		}
-	} else if client, ok := c.(*redis.Client); ok {
-		cClient := client.WithContext(context.Background())
-		for _, f := range fs {
-			f.(func(c interface{}))(cClient)
-		}
-	} else if client, ok := c.(*mgo.Session); ok {
-		cClient := client.Clone()
-		for _, f := range fs {
-			f.(func(c interface{}))(cClient)
-		}
+	for _, f := range fs {
+		f.(func())()
 	}
-
 	return len(fs)
 }
 
