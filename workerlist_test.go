@@ -22,7 +22,7 @@ func Benchmark_queue(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		qu.Push(func() {})
 	}
-	qu.SyncProc()
+	qu.SyncProcess()
 }
 
 func Benchmark_queuelist(b *testing.B) {
