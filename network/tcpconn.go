@@ -11,10 +11,10 @@ import (
 
 	"log"
 
-	"kk_core/auth"
-	"kk_core/common"
+	"github.com/hhq163/kk_core/auth"
+	"github.com/hhq163/kk_core/common"
 
-	"kk_core/util"
+	"github.com/hhq163/kk_core/util"
 )
 
 //ConnSet server conn map

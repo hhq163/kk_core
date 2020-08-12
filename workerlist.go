@@ -3,7 +3,7 @@ package svr_core
 import (
 	"sync"
 
-	"kk_core/util"
+	"github.com/hhq163/kk_core/util"
 )
 
 //根据uid进行投递任务，同一用户任务顺序执行

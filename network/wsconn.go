@@ -7,10 +7,10 @@ import (
 	"net"
 	"sync/atomic"
 
-	"kk_core/auth"
-	"kk_core/base"
-	"kk_core/common"
-	"kk_core/util"
+	"github.com/hhq163/kk_core/auth"
+	"github.com/hhq163/kk_core/base"
+	"github.com/hhq163/kk_core/common"
+	"github.com/hhq163/kk_core/util"
 
 	"github.com/gorilla/websocket"
 )

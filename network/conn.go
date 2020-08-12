@@ -3,7 +3,7 @@ package network
 import (
 	"net"
 
-	"kk_core/common"
+	"github.com/hhq163/kk_core/common"
 )
 
 type Conn interface {

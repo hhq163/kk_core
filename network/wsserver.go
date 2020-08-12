@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
-	"kk_core/base"
+	"github.com/hhq163/kk_core/base"
 )
 
 type WSServer struct {

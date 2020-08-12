@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"testing"
 
-	"kk_core/auth"
+	"github.com/hhq163/kk_core/auth"
 )
 
 //加解密测试

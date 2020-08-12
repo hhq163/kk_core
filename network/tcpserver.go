@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	"kk_core/base"
+	"github.com/hhq163/kk_core/base"
 )
 
 //TCPServer TCP server manager

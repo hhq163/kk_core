@@ -1,4 +1,4 @@
-module kk_core
+module github.com/hhq163/kk_core
 
 go 1.13
 
