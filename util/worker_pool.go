@@ -19,8 +19,17 @@ func NewWorkerPool(maxGoroutines int, c interface{}) *WorkerPool {
 	p := WorkerPool{
 		work: make(chan Work),
 	}
-
-	if client, ok := c.(*redis.ClusterClient); ok { //redis集群连接池
+	if c == nil {
+		p.wg.Add(maxGoroutines)
+		for i := 0; i < maxGoroutines; i++ {
+			go func() {
+				for w := range p.work {
+					w(nil)
+				}
+				p.wg.Done()
+			}()
+		}
+	}else if client, ok := c.(*redis.ClusterClient); ok { //redis集群连接池
 		p.wg.Add(maxGoroutines)
 		for i := 0; i < maxGoroutines; i++ {
 			go func() {
@@ -49,16 +58,6 @@ func NewWorkerPool(maxGoroutines int, c interface{}) *WorkerPool {
 				cClient := client.Clone()
 				for w := range p.work {
 					w(cClient)
-				}
-				p.wg.Done()
-			}()
-		}
-	} else {
-		p.wg.Add(maxGoroutines)
-		for i := 0; i < maxGoroutines; i++ {
-			go func() {
-				for w := range p.work {
-					w(nil)
 				}
 				p.wg.Done()
 			}()
