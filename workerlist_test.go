@@ -1,9 +1,9 @@
-package svr_core
+package kk_core
 
 import (
 	"testing"
 
-	"github.com/svr_core/util"
+	"github.com/kk_core/util"
 )
 
 func Benchmark_worklist(b *testing.B) {

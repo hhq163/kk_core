@@ -1,4 +1,4 @@
-package svr_core
+package kk_core
 
 import (
 	"sync"

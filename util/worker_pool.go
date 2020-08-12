@@ -29,7 +29,7 @@ func NewWorkerPool(maxGoroutines int, c interface{}) *WorkerPool {
 				p.wg.Done()
 			}()
 		}
-	}else if client, ok := c.(*redis.ClusterClient); ok { //redis集群连接池
+	} else if client, ok := c.(*redis.ClusterClient); ok { //redis集群连接池
 		p.wg.Add(maxGoroutines)
 		for i := 0; i < maxGoroutines; i++ {
 			go func() {

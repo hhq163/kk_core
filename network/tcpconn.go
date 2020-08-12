@@ -103,7 +103,7 @@ func (tcpConn *TCPConn) ReadMsg() (*common.WorldPacket, error) {
 	tcpConn.Crypt.DecryptRecv(headbuf)
 	msgLen := uint32(binary.LittleEndian.Uint16(headbuf[:2]))
 	opCode := binary.LittleEndian.Uint16(headbuf[2:5])
-	ver := binary.LittleEndian.Uint16(headbuf[5:]) //版本号
+	// ver := binary.LittleEndian.Uint16(headbuf[5:]) //版本号
 	// check len
 	if msgLen > tcpConn.maxMsgLen {
 		return nil, errors.New("message too long")
