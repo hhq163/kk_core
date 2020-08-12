@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hhq163/kk_core/auth"
 )
 
 //加解密测试
@@ -19,8 +18,8 @@ func TestEnDecrypt(t *testing.T) {
 	h.Write([]byte(username + ":" + password))
 	key := h.Sum(nil)
 
-	var crypt auth.AuthCrypt
-	var clinetCrypt auth.ClientAuthCrypt
+	var crypt AuthCrypt
+	var clinetCrypt ClientAuthCrypt
 	crypt.Init(key)
 	clinetCrypt.Init(key)
 
