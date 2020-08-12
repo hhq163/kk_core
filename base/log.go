@@ -7,9 +7,14 @@ import (
 var Log logger.Logger
 
 func LogInit(debug bool, svcName string) {
-	Log = logger.NewDefaultLogger()
-	if debug { //非json格式
-		config := logger.NewDevelopmentConfig()
-		logger.SetConfig(config)
+	if debug {
+		cfg := logger.NewDevelopmentConfig()
+		// cfg.Encoding = "json"
+		cfg.OutputPaths = append(cfg.OutputPaths, "access_log.txt")
+		Log = logger.NewMyLogger(cfg)
+
+	} else {
+		cfg := logger.NewProductionConfig()
+		Log = logger.NewMyLogger(cfg)
 	}
 }
