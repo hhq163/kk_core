@@ -3,7 +3,7 @@ package network
 import (
 	"net"
 
-	"github.com/hhq163/svr_core/common"
+	"kk_core/common"
 )
 
 type Conn interface {

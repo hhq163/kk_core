@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/hhq163/svr_core/base"
+	"kk_core/base"
 )
 
 type TCPClient struct {
