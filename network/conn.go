@@ -7,7 +7,8 @@ import (
 )
 
 type Conn interface {
-	Read() (int, []byte, error)
+	// Read() (int, []byte, error)
+	Read(b []byte) (n int, err error)
 	Write(b []byte)
 	ReadMsg() (*common.WorldPacket, error)     //会对包头处理
 	WriteMsg(packet *common.WorldPacket) error //会对包头处理
