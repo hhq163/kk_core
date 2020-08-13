@@ -80,7 +80,7 @@ func (wsConn *WSConn) RemoteAddr() net.Addr {
 	return wsConn.conn.RemoteAddr()
 }
 
-func (tcpConn *TCPConn) Read(b []byte) (n int, err error) {
+func (wsConn *TCPConn) Read(b []byte) (n int, err error) {
 	return wsConn.conn.Read(b)
 }
 
