@@ -24,7 +24,7 @@ type WSServer struct {
 	HTTPTimeout time.Duration
 	CertFile    string
 	KeyFile     string
-	NewAgent    func(*WSConn) Agent
+	NewAgent    func(*Conn) Agent
 	ln          net.Listener
 	Handler     *KKHandle
 }
