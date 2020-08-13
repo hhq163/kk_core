@@ -6,7 +6,6 @@ import (
 	"encoding/binary"
 	"fmt"
 	"testing"
-
 )
 
 //加解密测试

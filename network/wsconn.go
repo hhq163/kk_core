@@ -69,6 +69,7 @@ func (wsConn *WSConn) Write(b []byte) {
 	wsConn.writeChan.Push(b)
 }
 
+//不进队列，直接发送
 func (wsConn *WSConn) DirectWrite(b []byte) {
 	wsConn.conn.WriteMessage(websocket.BinaryMessage, b)
 }
@@ -79,6 +80,10 @@ func (wsConn *WSConn) LocalAddr() net.Addr {
 
 func (wsConn *WSConn) RemoteAddr() net.Addr {
 	return wsConn.conn.RemoteAddr()
+}
+
+func (wsConn *WSConn) Read() (int, []byte, error) {
+	return wsConn.conn.ReadMessage()
 }
 
 func (wsConn *WSConn) ReadMsg() (*common.WorldPacket, error) {
@@ -111,21 +116,6 @@ func (wsConn *WSConn) WriteMsg(packet *common.WorldPacket) error {
 	wsConn.Crypt.EncryptSend(header.Bytes())
 	binary.Write(header, binary.LittleEndian, packet.Bytes())
 	wsConn.Write(header.Bytes())
-	return nil
-}
-
-func (wsConn *WSConn) DirectWriteMsg(packet *common.WorldPacket) error {
-	if wsConn.IsClosed() {
-		return errors.New("socket is closed")
-	}
-	// get len
-	msgLen := uint16(packet.Len() + 4)
-	header := new(bytes.Buffer)
-	binary.Write(header, binary.LittleEndian, msgLen)
-	binary.Write(header, binary.LittleEndian, packet.GetOpCode())
-	wsConn.Crypt.EncryptSend(header.Bytes())
-	binary.Write(header, binary.LittleEndian, packet.Bytes())
-	wsConn.DirectWrite(header.Bytes())
 	return nil
 }
 

@@ -7,12 +7,13 @@ import (
 )
 
 type Conn interface {
-	ReadMsg() (*common.WorldPacket, error)
-	WriteMsg(packet *common.WorldPacket) error
+	Read() (int, []byte, error)
+	Write(b []byte)
+	ReadMsg() (*common.WorldPacket, error)     //会对包头处理
+	WriteMsg(packet *common.WorldPacket) error //会对包头处理
 	LocalAddr() net.Addr
 	RemoteAddr() net.Addr
 	Close()
 	IsClosed() bool
 	InitCrypt(k []byte)
-	DirectWriteMsg(packet *common.WorldPacket) error
 }
