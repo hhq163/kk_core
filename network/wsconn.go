@@ -81,12 +81,15 @@ func (wsConn *WSConn) RemoteAddr() net.Addr {
 }
 
 func (wsConn *WSConn) Read(b []byte) (n int, err error) {
-	return wsConn.conn.Read(b)
+	var l int
+	_, msg, err := wsConn.conn.ReadMessage()
+	if err != nil {
+		return l, err
+	}
+	b = msg
+	l = len(msg)
+	return l, nil
 }
-
-// func (wsConn *WSConn) Read() (int, []byte, error) {
-// 	return wsConn.conn.ReadMessage()
-// }
 
 func (wsConn *WSConn) ReadMsg() (*common.WorldPacket, error) {
 	_, b, err := wsConn.conn.ReadMessage()
