@@ -15,8 +15,6 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-type WebsocketConnSet map[*websocket.Conn]struct{}
-
 type WSConn struct {
 	conn      *websocket.Conn
 	writeChan *util.SyncQueue
