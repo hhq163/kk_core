@@ -24,9 +24,9 @@ type WSServer struct {
 	HTTPTimeout time.Duration
 	CertFile    string
 	KeyFile     string
-	NewAgent    func(*Conn) Agent
+	NewAgent    func(Conn) Agent
 	ln          net.Listener
-	Handler     *KKHandle
+	Handler     KKHandle
 }
 
 func (server *WSServer) Start() {
@@ -68,7 +68,7 @@ func (server *WSServer) Start() {
 
 	httpServer := &http.Server{
 		Addr:           server.Addr,
-		Handler:        *server.Handler,
+		Handler:        server.Handler,
 		ReadTimeout:    server.HTTPTimeout,
 		WriteTimeout:   server.HTTPTimeout,
 		MaxHeaderBytes: 1024,
