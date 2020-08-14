@@ -16,5 +16,6 @@ type Conn interface {
 	RemoteAddr() net.Addr
 	Close()
 	IsClosed() bool
+	IsTimeout(maxTime uint32) bool
 	InitCrypt(k []byte)
 }

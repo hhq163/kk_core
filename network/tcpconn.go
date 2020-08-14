@@ -24,11 +24,12 @@ const HeaderLen uint32 = 4
 
 //TCPConn tcp连接类
 type TCPConn struct {
-	conn      net.Conn
-	writeChan *util.SyncQueue
-	maxMsgLen uint32
-	closeFlag int32
-	Crypt     auth.AuthCrypt
+	conn       net.Conn
+	writeChan  *util.SyncQueue
+	maxMsgLen  uint32
+	closeFlag  int32
+	activeTime int64 //the time of last receive msg
+	Crypt      auth.AuthCrypt
 }
 
 func newTCPConn(conn net.Conn, maxMsgLen uint32) *TCPConn {
@@ -86,32 +87,6 @@ func (tcpConn *TCPConn) DirectWrite(b []byte) {
 func (tcpConn *TCPConn) Read(b []byte) (n int, err error) {
 	return tcpConn.conn.Read(b)
 }
-
-// func (tcpConn *TCPConn) Read() (int, []byte, error) {
-// 	headbuf := make([]byte, 4)
-// 	// read len
-// 	if l, err := io.ReadFull(tcpConn, headbuf); err != nil {
-// 		return l, nil, err
-// 	}
-
-// 	msgLen := uint32(binary.LittleEndian.Uint16(headbuf[:2]))
-// 	// opCode := binary.LittleEndian.Uint16(headbuf[2:4])
-// 	// check len
-// 	if msgLen > tcpConn.maxMsgLen {
-// 		return 0, nil, errors.New("message too long")
-// 	} else if msgLen < HeaderLen {
-// 		return 0, nil, errors.New("message too short")
-// 	}
-
-// 	if msgLen > 4 {
-// 		msgData := make([]byte, msgLen-4)
-// 		if l, err := io.ReadFull(tcpConn, msgData); err != nil {
-// 			return l, nil, err
-// 		}
-// 		return int(msgLen), msgData, nil
-// 	}
-// 	return int(msgLen), headbuf, nil
-// }
 
 func (tcpConn *TCPConn) LocalAddr() net.Addr {
 	return tcpConn.conn.LocalAddr()
@@ -171,4 +146,13 @@ func (tcpConn *TCPConn) WriteMsg(packet *common.WorldPacket) error {
 
 func (tcpConn *TCPConn) InitCrypt(k []byte) {
 	tcpConn.Crypt.Init(k)
+}
+
+func (tcpConn *TCPConn) IsTimeout(maxTime uint32) bool {
+	var ret bool
+	cur := uint32(time.Now().Unix() - tcpConn.activeTime)
+	if cur > maxTime {
+		ret = true
+	}
+	return ret
 }

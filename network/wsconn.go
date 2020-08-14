@@ -6,6 +6,7 @@ import (
 	"errors"
 	"net"
 	"sync/atomic"
+	"time"
 
 	"github.com/hhq163/kk_core/auth"
 	"github.com/hhq163/kk_core/base"
@@ -16,22 +17,23 @@ import (
 )
 
 type WSConn struct {
-	conn      *websocket.Conn
-	writeChan *util.SyncQueue
-	maxMsgLen uint32
-	closeFlag int32
-	Crypt     auth.AuthCrypt
+	conn       *websocket.Conn
+	writeChan  *util.SyncQueue
+	maxMsgLen  uint32
+	closeFlag  int32
+	activeTime int64 //the time of last receive msg
+	Crypt      auth.AuthCrypt
 }
 
 func newWSConn(conn *websocket.Conn, maxMsgLen uint32) *WSConn {
-	wsConn := new(WSConn)
-	wsConn.conn = conn
-	wsConn.writeChan = util.NewSyncQueue()
-	wsConn.maxMsgLen = maxMsgLen
+	w := new(WSConn)
+	w.conn = conn
+	w.writeChan = util.NewSyncQueue()
+	w.maxMsgLen = maxMsgLen
 
 	go func() {
 		for {
-			bs := wsConn.writeChan.PopAll()
+			bs := w.writeChan.PopAll()
 			if bs == nil {
 				break
 			}
@@ -48,41 +50,41 @@ func newWSConn(conn *websocket.Conn, maxMsgLen uint32) *WSConn {
 
 		}
 	closeSocket:
-		atomic.StoreInt32(&wsConn.closeFlag, 1)
+		atomic.StoreInt32(&w.closeFlag, 1)
 		conn.Close()
 	}()
 
-	return wsConn
+	return w
 }
 
-func (wsConn *WSConn) Close() {
-	wsConn.writeChan.Close()
+func (w *WSConn) Close() {
+	w.writeChan.Close()
 }
 
-func (wsConn *WSConn) IsClosed() bool {
-	return atomic.LoadInt32(&wsConn.closeFlag) == 1
+func (w *WSConn) IsClosed() bool {
+	return atomic.LoadInt32(&w.closeFlag) == 1
 }
 
-func (wsConn *WSConn) Write(b []byte) {
-	wsConn.writeChan.Push(b)
+func (w *WSConn) Write(b []byte) {
+	w.writeChan.Push(b)
 }
 
 //不进队列，直接发送
-func (wsConn *WSConn) DirectWrite(b []byte) {
-	wsConn.conn.WriteMessage(websocket.BinaryMessage, b)
+func (w *WSConn) DirectWrite(b []byte) {
+	w.conn.WriteMessage(websocket.BinaryMessage, b)
 }
 
-func (wsConn *WSConn) LocalAddr() net.Addr {
-	return wsConn.conn.LocalAddr()
+func (w *WSConn) LocalAddr() net.Addr {
+	return w.conn.LocalAddr()
 }
 
-func (wsConn *WSConn) RemoteAddr() net.Addr {
-	return wsConn.conn.RemoteAddr()
+func (w *WSConn) RemoteAddr() net.Addr {
+	return w.conn.RemoteAddr()
 }
 
-func (wsConn *WSConn) Read(b []byte) (n int, err error) {
+func (w *WSConn) Read(b []byte) (n int, err error) {
 	var l int
-	_, msg, err := wsConn.conn.ReadMessage()
+	_, msg, err := w.conn.ReadMessage()
 	if err != nil {
 		return l, err
 	}
@@ -91,12 +93,12 @@ func (wsConn *WSConn) Read(b []byte) (n int, err error) {
 	return l, nil
 }
 
-func (wsConn *WSConn) ReadMsg() (*common.WorldPacket, error) {
-	_, b, err := wsConn.conn.ReadMessage()
+func (w *WSConn) ReadMsg() (*common.WorldPacket, error) {
+	_, b, err := w.conn.ReadMessage()
 	if err != nil {
 		return nil, err
 	}
-	wsConn.Crypt.DecryptRecv(b[:4])
+	w.Crypt.DecryptRecv(b[:4])
 	msgLen := int(binary.LittleEndian.Uint16(b[:2]))
 	opCode := binary.LittleEndian.Uint16(b[2:4])
 	if msgLen != len(b) {
@@ -109,8 +111,8 @@ func (wsConn *WSConn) ReadMsg() (*common.WorldPacket, error) {
 }
 
 // args must not be modified by the others goroutines
-func (wsConn *WSConn) WriteMsg(packet *common.WorldPacket) error {
-	if wsConn.IsClosed() {
+func (w *WSConn) WriteMsg(packet *common.WorldPacket) error {
+	if w.IsClosed() {
 		return errors.New("socket is closed")
 	}
 	// get len
@@ -118,12 +120,21 @@ func (wsConn *WSConn) WriteMsg(packet *common.WorldPacket) error {
 	header := new(bytes.Buffer)
 	binary.Write(header, binary.LittleEndian, msgLen)
 	binary.Write(header, binary.LittleEndian, packet.GetOpCode())
-	wsConn.Crypt.EncryptSend(header.Bytes())
+	w.Crypt.EncryptSend(header.Bytes())
 	binary.Write(header, binary.LittleEndian, packet.Bytes())
-	wsConn.Write(header.Bytes())
+	w.Write(header.Bytes())
 	return nil
 }
 
-func (wsConn *WSConn) InitCrypt(k []byte) {
-	wsConn.Crypt.Init(k)
+func (w *WSConn) InitCrypt(k []byte) {
+	w.Crypt.Init(k)
+}
+
+func (w *WSConn) IsTimeout(maxTime uint32) bool {
+	var ret bool
+	cur := uint32(time.Now().Unix() - w.activeTime)
+	if cur > maxTime {
+		ret = true
+	}
+	return ret
 }
