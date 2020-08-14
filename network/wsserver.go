@@ -33,7 +33,7 @@ type WSServer struct {
 func (server *WSServer) Start() {
 	ln, err := net.Listen("tcp", server.Addr)
 	if err != nil {
-		log.Fatal((err)
+		base.Log.Fatal(err)
 	}
 
 	if server.MaxConnNum <= 0 {
