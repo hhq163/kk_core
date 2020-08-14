@@ -1,7 +1,6 @@
 package network
 
 import (
-	"log"
 	"crypto/tls"
 	"net"
 	"net/http"

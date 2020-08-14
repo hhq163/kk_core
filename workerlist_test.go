@@ -3,34 +3,34 @@ package kk_core
 import (
 	"testing"
 
-	"github.com/kk_core/util"
+	"github.com/hhq163/kk_core/util"
 )
 
 func Benchmark_worklist(b *testing.B) {
 	b.StopTimer()
-	pool := util.NewWorkPool(1000)
+	pool := util.NewWorkerPool(1000, nil)
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
-		pool.Run(func() {})
+		pool.Run(func(interface{}) {})
 	}
 }
 
 func Benchmark_queue(b *testing.B) {
 	b.StopTimer()
-	qu := util.NewWorkList(0)
+	qu := NewWorkerList(0, nil)
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
-		qu.Push(func() {})
+		qu.Push(func(interface{}) {})
 	}
 	qu.SyncProcess()
 }
 
 func Benchmark_queuelist(b *testing.B) {
 	b.StopTimer()
-	qu := util.NewWorkList(1000)
+	qu := NewWorkerList(1000, nil)
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
-		qu.Push(func() {})
+		qu.Push(func(interface{}) {})
 		//qu.Proc()
 	}
 }
