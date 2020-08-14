@@ -1,6 +1,7 @@
 package network
 
 import (
+	"log"
 	"crypto/tls"
 	"net"
 	"net/http"
@@ -32,7 +33,7 @@ type WSServer struct {
 func (server *WSServer) Start() {
 	ln, err := net.Listen("tcp", server.Addr)
 	if err != nil {
-		base.Log.Fatal(err)
+		log.Fatal((err)
 	}
 
 	if server.MaxConnNum <= 0 {
@@ -80,5 +81,5 @@ func (server *WSServer) Start() {
 func (server *WSServer) Close() {
 	server.ln.Close()
 
-	server.Handler.Close()
+	// server.Handler.Close()
 }
