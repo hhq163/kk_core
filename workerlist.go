@@ -12,19 +12,19 @@ type WorkerGroup struct {
 	Length    int
 }
 
-func NewWorkGroup(groupNum int, c interface{}) *WorkerGroup {
+func NewWorkGroup(groupNum int) *WorkerGroup {
 	wg := &WorkerGroup{
 		WorkGroup: make([]*WorkerList, groupNum),
 		Length:    groupNum,
 	}
 	for k := range wg.WorkGroup {
-		wg.WorkGroup[k] = NewWorkerList(1, c)
+		wg.WorkGroup[k] = NewWorkerList(1)
 	}
 
 	return wg
 }
 
-func (wg *WorkerGroup) Push(uid int, f func(i interface{})) {
+func (wg *WorkerGroup) Push(uid int, f func()) {
 	index := uid % wg.Length
 	wg.WorkGroup[index].Push(f)
 }
@@ -35,12 +35,12 @@ type WorkerList struct {
 	wg    sync.WaitGroup
 }
 
-func NewWorkerList(maxGoroutines int, c interface{}) *WorkerList {
+func NewWorkerList(maxGoroutines int) *WorkerList {
 	w := &WorkerList{
 		works: util.NewSyncQueue(),
 	}
 	if maxGoroutines > 0 {
-		w.pool = util.NewWorkerPool(maxGoroutines, c)
+		w.pool = util.NewWorkerPool(maxGoroutines)
 		w.wg.Add(1)
 		go w.Process()
 	}
@@ -48,7 +48,7 @@ func NewWorkerList(maxGoroutines int, c interface{}) *WorkerList {
 	return w
 }
 
-func (w *WorkerList) Push(f func(i interface{})) {
+func (w *WorkerList) Push(f func()) {
 	w.works.Push(f)
 }
 
@@ -68,7 +68,7 @@ func (w *WorkerList) Process() {
 		if f == nil {
 			return
 		}
-		w.pool.Run(f.(func(c interface{})))
+		w.pool.Run(f.(func()))
 	}
 }
 
