@@ -242,48 +242,48 @@ func encode(buf *bytes.Buffer, v reflect.Value) {
 	}
 }
 
-//WorldPacket 消息包处理类
-type WorldPacket struct {
+//Packet 消息包处理类
+type Packet struct {
 	buffer *bytes.Buffer
-	opCode uint16
+	cmdId  uint16
 }
 
 //Initialize 初始化操作数
-func (packet *WorldPacket) Initialize(opCode uint16) {
+func (packet *Packet) Initialize(cmdId uint16) {
 	packet.buffer = new(bytes.Buffer)
-	packet.opCode = opCode
+	packet.cmdId = cmdId
 }
 
 //GetOpCode 操作数
-func (packet *WorldPacket) GetOpCode() uint16 {
-	return packet.opCode
+func (packet *Packet) GetCmd() uint16 {
+	return packet.cmdId
 }
-func (packet *WorldPacket) WriteBytes(p []byte) {
+func (packet *Packet) WriteBytes(p []byte) {
 	packet.buffer.Write(p)
 }
 
-func (packet *WorldPacket) WriteData(data interface{}) {
+func (packet *Packet) WriteData(data interface{}) {
 	v := reflect.Indirect(reflect.ValueOf(data))
 	encode(packet.buffer, v)
 }
 
-func (packet *WorldPacket) ReadData(data interface{}) error {
+func (packet *Packet) ReadData(data interface{}) error {
 	v := reflect.ValueOf(data)
 	return decode(packet.buffer, v)
 }
 
-func (packet *WorldPacket) Len() int {
+func (packet *Packet) Len() int {
 	return packet.buffer.Len()
 }
 
-func (packet *WorldPacket) Bytes() []byte {
+func (packet *Packet) Bytes() []byte {
 	return packet.buffer.Bytes()
 }
 
-func (packet *WorldPacket) GetBuffer() *bytes.Buffer {
+func (packet *Packet) GetBuffer() *bytes.Buffer {
 	return packet.buffer
 }
 
-func (packet *WorldPacket) SetBuffer(b *bytes.Buffer) {
+func (packet *Packet) SetBuffer(b *bytes.Buffer) {
 	packet.buffer = b
 }

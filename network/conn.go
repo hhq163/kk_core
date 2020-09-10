@@ -10,8 +10,8 @@ type Conn interface {
 	// Read() (int, []byte, error)
 	Read(b []byte) (n int, err error)
 	Write(b []byte)
-	ReadMsg() (*common.WorldPacket, error)     //会对包头处理
-	WriteMsg(packet *common.WorldPacket) error //会对包头处理
+	ReadMsg() (common.IPacket, error)     //会对包头处理
+	WriteMsg(packet common.IPacket) error //会对包头处理
 	LocalAddr() net.Addr
 	RemoteAddr() net.Addr
 	Close()

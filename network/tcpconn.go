@@ -96,7 +96,7 @@ func (tcpConn *TCPConn) RemoteAddr() net.Addr {
 	return tcpConn.conn.RemoteAddr()
 }
 
-func (tcpConn *TCPConn) ReadMsg() (*common.WorldPacket, error) {
+func (tcpConn *TCPConn) ReadMsg() (common.IPacket, error) {
 	headbuf := make([]byte, 4)
 	// read len
 	if _, err := io.ReadFull(tcpConn, headbuf); err != nil {
@@ -118,18 +118,18 @@ func (tcpConn *TCPConn) ReadMsg() (*common.WorldPacket, error) {
 		if _, err := io.ReadFull(tcpConn, msgData); err != nil {
 			return nil, err
 		}
-		packet := &common.WorldPacket{}
+		packet := &common.Packet{}
 		packet.Initialize(opCode)
 		packet.WriteBytes(msgData)
 		return packet, nil
 	}
-	packet := &common.WorldPacket{}
+	packet := &common.Packet{}
 	packet.Initialize(opCode)
 	return packet, nil
 
 }
 
-func (tcpConn *TCPConn) WriteMsg(packet *common.WorldPacket) error {
+func (tcpConn *TCPConn) WriteMsg(packet common.IPacket) error {
 	if tcpConn.IsClosed() {
 		return errors.New("socket is closed")
 	}
@@ -137,7 +137,7 @@ func (tcpConn *TCPConn) WriteMsg(packet *common.WorldPacket) error {
 	msgLen := uint16(packet.Len() + 5)
 	header := new(bytes.Buffer)
 	binary.Write(header, binary.LittleEndian, msgLen)
-	binary.Write(header, binary.LittleEndian, packet.GetOpCode())
+	binary.Write(header, binary.LittleEndian, packet.GetCmd())
 	tcpConn.Crypt.EncryptSend(header.Bytes())
 	binary.Write(header, binary.LittleEndian, packet.Bytes())
 	tcpConn.Write(header.Bytes())

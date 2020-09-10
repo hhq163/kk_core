@@ -93,7 +93,7 @@ func (w *WSConn) Read(b []byte) (n int, err error) {
 	return l, nil
 }
 
-func (w *WSConn) ReadMsg() (*common.WorldPacket, error) {
+func (w *WSConn) ReadMsg() (common.IPacket, error) {
 	_, b, err := w.conn.ReadMessage()
 	if err != nil {
 		return nil, err
@@ -104,14 +104,13 @@ func (w *WSConn) ReadMsg() (*common.WorldPacket, error) {
 	if msgLen != len(b) {
 		return nil, errors.New("收到ws数据长度错误")
 	}
-	packet := &common.WorldPacket{}
+	packet := &common.Packet{}
 	packet.Initialize(opCode)
 	packet.WriteBytes(b[4:])
 	return packet, err
 }
 
-// args must not be modified by the others goroutines
-func (w *WSConn) WriteMsg(packet *common.WorldPacket) error {
+func (w *WSConn) WriteMsg(packet common.IPacket) error {
 	if w.IsClosed() {
 		return errors.New("socket is closed")
 	}
@@ -119,7 +118,7 @@ func (w *WSConn) WriteMsg(packet *common.WorldPacket) error {
 	msgLen := uint16(packet.Len() + 4)
 	header := new(bytes.Buffer)
 	binary.Write(header, binary.LittleEndian, msgLen)
-	binary.Write(header, binary.LittleEndian, packet.GetOpCode())
+	binary.Write(header, binary.LittleEndian, packet.GetCmd())
 	w.Crypt.EncryptSend(header.Bytes())
 	binary.Write(header, binary.LittleEndian, packet.Bytes())
 	w.Write(header.Bytes())
