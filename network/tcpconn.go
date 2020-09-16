@@ -20,12 +20,12 @@ import (
 //ConnSet server conn map
 type ConnSet map[net.Conn]struct{}
 
-const HeaderLen uint32 = 4
+const mLen uint32 = 4 //长度占用的字节数
 
 //TCPConn tcp连接类
 type TCPConn struct {
 	conn       net.Conn
-	writeChan  *util.SyncQueue
+	writeQueue *util.SyncQueue
 	maxMsgLen  uint32
 	closeFlag  int32
 	activeTime int64 //the time of last receive msg
@@ -35,14 +35,14 @@ type TCPConn struct {
 func newTCPConn(conn net.Conn, maxMsgLen uint32) *TCPConn {
 	tcpConn := new(TCPConn)
 	tcpConn.conn = conn
-	tcpConn.writeChan = util.NewSyncQueue()
+	tcpConn.writeQueue = util.NewSyncQueue()
 	tcpConn.maxMsgLen = maxMsgLen
 	//tcp写goroutine
 	go func() {
 		var tmp bytes.Buffer
 		for {
 			time.Sleep(100 * time.Millisecond)
-			bs := tcpConn.writeChan.PopAll()
+			bs := tcpConn.writeQueue.PopAll()
 			if bs == nil {
 				break
 			}
@@ -73,11 +73,11 @@ func (tcpConn *TCPConn) IsClosed() bool {
 	return atomic.LoadInt32(&tcpConn.closeFlag) == 1
 }
 func (tcpConn *TCPConn) Close() {
-	tcpConn.writeChan.Close()
+	tcpConn.writeQueue.Close()
 }
 
 func (tcpConn *TCPConn) Write(b []byte) {
-	tcpConn.writeChan.Push(b)
+	tcpConn.writeQueue.Push(b)
 }
 
 //不进队列，直接发送
@@ -97,34 +97,34 @@ func (tcpConn *TCPConn) RemoteAddr() net.Addr {
 }
 
 func (tcpConn *TCPConn) ReadMsg() (common.IPacket, error) {
-	headbuf := make([]byte, 4)
+	headbuf := make([]byte, mLen)
 	// read len
 	if _, err := io.ReadFull(tcpConn, headbuf); err != nil {
 		return nil, err
 	}
 	tcpConn.Crypt.DecryptRecv(headbuf)
-	msgLen := uint32(binary.LittleEndian.Uint16(headbuf[:2]))
-	opCode := binary.LittleEndian.Uint16(headbuf[2:4])
+	msgLen := uint32(binary.LittleEndian.Uint16(headbuf[:mLen]))
+	cmdId := binary.LittleEndian.Uint16(headbuf[mLen : mLen+2])
 	// check len
 	if msgLen > tcpConn.maxMsgLen {
 		return nil, errors.New("message too long")
-	} else if msgLen < HeaderLen {
+	} else if msgLen < mLen {
 		return nil, errors.New("message too short")
 	}
 
 	// data
-	if msgLen > 4 {
-		msgData := make([]byte, msgLen-4)
+	if msgLen > mLen {
+		msgData := make([]byte, msgLen-mLen)
 		if _, err := io.ReadFull(tcpConn, msgData); err != nil {
 			return nil, err
 		}
 		packet := &common.Packet{}
-		packet.Initialize(opCode)
+		packet.Initialize(cmdId)
 		packet.WriteBytes(msgData)
 		return packet, nil
 	}
 	packet := &common.Packet{}
-	packet.Initialize(opCode)
+	packet.Initialize(cmdId)
 	return packet, nil
 
 }
@@ -134,7 +134,7 @@ func (tcpConn *TCPConn) WriteMsg(packet common.IPacket) error {
 		return errors.New("socket is closed")
 	}
 	// get len
-	msgLen := uint16(packet.Len() + 5)
+	msgLen := uint16(packet.Len() + int(mLen) + 2)
 	header := new(bytes.Buffer)
 	binary.Write(header, binary.LittleEndian, msgLen)
 	binary.Write(header, binary.LittleEndian, packet.GetCmd())

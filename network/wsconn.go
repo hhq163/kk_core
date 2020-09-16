@@ -16,24 +16,26 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+const mLen uint32 = 4 //长度占用的字节数
+
 type WSConn struct {
 	conn       *websocket.Conn
-	writeChan  *util.SyncQueue
+	writeQueue *util.SyncQueue
 	maxMsgLen  uint32
 	closeFlag  int32
 	activeTime int64 //the time of last receive msg
 	Crypt      auth.AuthCrypt
 }
 
-func newWSConn(conn *websocket.Conn, maxMsgLen uint32) *WSConn {
+func NewWSConn(conn *websocket.Conn, maxMsgLen uint32) *WSConn {
 	w := new(WSConn)
 	w.conn = conn
-	w.writeChan = util.NewSyncQueue()
+	w.writeQueue = util.NewSyncQueue()
 	w.maxMsgLen = maxMsgLen
 
 	go func() {
 		for {
-			bs := w.writeChan.PopAll()
+			bs := w.writeQueue.PopAll()
 			if bs == nil {
 				break
 			}
@@ -58,7 +60,7 @@ func newWSConn(conn *websocket.Conn, maxMsgLen uint32) *WSConn {
 }
 
 func (w *WSConn) Close() {
-	w.writeChan.Close()
+	w.writeQueue.Close()
 }
 
 func (w *WSConn) IsClosed() bool {
@@ -66,7 +68,7 @@ func (w *WSConn) IsClosed() bool {
 }
 
 func (w *WSConn) Write(b []byte) {
-	w.writeChan.Push(b)
+	w.writeQueue.Push(b)
 }
 
 //不进队列，直接发送
@@ -98,15 +100,15 @@ func (w *WSConn) ReadMsg() (common.IPacket, error) {
 	if err != nil {
 		return nil, err
 	}
-	w.Crypt.DecryptRecv(b[:4])
-	msgLen := int(binary.LittleEndian.Uint16(b[:2]))
-	opCode := binary.LittleEndian.Uint16(b[2:4])
+	w.Crypt.DecryptRecv(b[:mLen+2])
+	msgLen := int(binary.LittleEndian.Uint16(b[:mLen]))
+	cmdId := binary.LittleEndian.Uint16(b[mLen:2])
 	if msgLen != len(b) {
 		return nil, errors.New("收到ws数据长度错误")
 	}
 	packet := &common.Packet{}
-	packet.Initialize(opCode)
-	packet.WriteBytes(b[4:])
+	packet.Initialize(cmdId)
+	packet.WriteBytes(b[mLen+2:])
 	return packet, err
 }
 
@@ -114,8 +116,7 @@ func (w *WSConn) WriteMsg(packet common.IPacket) error {
 	if w.IsClosed() {
 		return errors.New("socket is closed")
 	}
-	// get len
-	msgLen := uint16(packet.Len() + 4)
+	msgLen := uint16(packet.Len() + int(mLen) + 2)
 	header := new(bytes.Buffer)
 	binary.Write(header, binary.LittleEndian, msgLen)
 	binary.Write(header, binary.LittleEndian, packet.GetCmd())

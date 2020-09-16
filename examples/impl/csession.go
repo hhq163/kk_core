@@ -1,12 +1,11 @@
 package impl
 
 import (
-	"game_server/game/proto"
+	"kk_server/base"
 	"sync"
 	"time"
 
-	"game_server/base"
-
+	"github.com/hhq163/kk_core/common"
 	"github.com/hhq163/kk_core/network"
 	"github.com/hhq163/kk_core/util"
 	"github.com/hhq163/logger"
@@ -31,7 +30,7 @@ func NewCSession(userId int64, conn network.Conn) *CSession {
 	return cs
 }
 
-func (s *CSession) sendPacket(msg *proto.S2CMessage) {
+func (s *CSession) sendPacket(msg common.IPacket) {
 	if SendPacket(s.conn, msg) != nil {
 		s.conn.Close()
 	}
@@ -43,7 +42,7 @@ func (s *CSession) Update() bool {
 		goto check
 	}
 	for _, pck := range pcks {
-		msg, ok := pck.(*proto.C2SMessage)
+		msg, ok := pck.(*common.Packet)
 		if !ok {
 			base.Log.Info("pck.(*proto.C2SMessage) not ok")
 			break
@@ -100,27 +99,27 @@ func (s *CSession) Close() {
 	})
 }
 
-func (s *CSession) handler(msg *util.Packet) {
+func (s *CSession) handler(msg util.IPacket) {
 	tLog := base.Log.With(logger.FuncName, "(s *CSession) handler()")
 	defer func() {
 		if p := recover(); p != nil {
 			tLog.Error("CSession panic err: ", p)
 		}
 	}()
-	tLog.Debug("CSession handler() msg.MsgType", msg.MsgType, ",userid=", s.UserId)
-	opHandle := OpCodeTable[msg.MsgType]
+	tLog.Debug("CSession handler() msg.GetCmd()=", msg.MsgType, ",userid=", s.UserId)
+	opHandle := OpCodeTable[msg.GetCmd()]
 	if opHandle.Handler != nil {
-		opHandle.Handler(s, msg.MsgData)
+		opHandle.Handler(s, msg)
 	} else {
 		tLog.Error("unknown opcode", msg.MsgType)
 	}
 }
 
 //QueuePacket 消息入队
-func (s *CSession) QueuePacket(msg *proto.C2SMessage) {
+func (s *CSession) QueuePacket(msg common.IPacket) {
 	s.recvQueue.Push(msg)
 }
 
-func (s *CSession) HandleGetAmount() {
+func (s *CSession) HandleGetAmount(packet common.IPacket) {
 
 }

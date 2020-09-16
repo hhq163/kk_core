@@ -1,7 +1,7 @@
 package impl
 
 import (
-	"game_server/game/proto"
+	"github.com/hhq163/kk_core/common"
 )
 
 var OpCodeTable = make(map[string]OpCodeHandler, 0)
@@ -17,20 +17,19 @@ const (
 type OpCodeHandler struct {
 	Name    string
 	Status  uint8
-	Handler func(*CSession, map[string]interface{})
+	Handler func(*CSession, common.IPacket)
 }
 
 type AgentHandler struct {
 	Name    string
 	Status  uint8
-	Handler func(*agent, map[string]interface{})
+	Handler func(*agent, common.IPacket)
 }
 
 func init() {
-	OpCodeTable[proto.MSG_GET_AMOUNT] = OpCodeHandler{"MSG_GET_AMOUNT", STATUS_AUTHED, (*CSession).HandleGetAmount}
+	OpCodeTable[protocol.MSG_GET_AMOUNT] = OpCodeHandler{"MSG_GET_AMOUNT", STATUS_AUTHED, (*CSession).HandleGetAmount}
 
-	AgentCodeTable[proto.MSG_HEARTBEAT] = AgentHandler{"MSG_HEARTBEAT", STATUS_NOT_AUTHED, (*agent).HandleHEARTBEAT}
-	AgentCodeTable[proto.MSG_CREATER_ROLE] = AgentHandler{"MSG_CREATER_ROLE", STATUS_NOT_AUTHED, (*agent).HandleCreateRole}
-	AgentCodeTable[proto.MSG_LOGIN] = AgentHandler{"MSG_LOGIN", STATUS_NOT_AUTHED, (*agent).HandleLogin}
+	AgentCodeTable[proto.Cmd_CBeat] = AgentHandler{"Cmd_CBeat", STATUS_NOT_AUTHED, (*agent).HandleHEARTBEAT}
+	AgentCodeTable[protocol.Cmd_CLogin] = AgentHandler{"Cmd_CLogin", STATUS_NOT_AUTHED, (*agent).HandleLogin}
 
 }

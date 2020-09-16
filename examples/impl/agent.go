@@ -1,11 +1,12 @@
 package impl
 
 import (
-	"encoding/json"
-	"game_server/game/proto"
+	"bytes"
+	"encoding/binary"
 	"kk_server/base"
 	"net"
 
+	"github.com/hhq163/kk_core/common"
 	"github.com/hhq163/kk_core/network"
 	"github.com/hhq163/logger"
 )
@@ -17,14 +18,16 @@ type agent struct {
 }
 
 //SendPacket send msg
-func SendPacket(conn network.Conn, msg *proto.S2CMessage) error {
-	packet, err := json.Marshal(msg)
-	if err != nil {
-		base.Log.Error("SendPacket msg.MsgType=", msg.MsgType)
-		return err
-	}
+func SendPacket(conn network.Conn, msg common.IPacket) error {
+
+	data := new(bytes.Buffer)
+	binary.Write(data, binary.LittleEndian, msg.Len())
+	binary.Write(data, binary.LittleEndian, msg.GetCmd())
+	binary.Write(data, binary.LittleEndian, msg.Bytes())
+	conn.Write(data.Bytes())
+
 	// base.Log.Debug("SendPacket msg.MsgType=", msg.MsgType)
-	conn.Write(packet)
+	conn.Write(data.Bytes())
 	return nil
 }
 
@@ -38,29 +41,22 @@ func (a *agent) Run() {
 			tLog.Error("socket panic err: ", p)
 		}
 	}()
-	var packet = make([]byte, base.Setting.Server.MaxMsgLen)
 
 	for {
-		n, err := a.conn.Read(packet)
+		packet, err := a.conn.ReadMsg()
 		if err != nil {
 			tLog.Error("err=", err.Error())
 			a.Close()
 			break
 		}
 
-		msg := &proto.C2SMessage{}
-		err = json.Unmarshal(packet[:n], msg)
-		if err != nil {
-			tLog.Error("json.Unmarshal error, err=", err.Error())
-			continue
-		}
-		if msg.MsgType != proto.MSG_HEARTBEAT {
-			tLog.Debug("msg.MsgType=", msg.MsgType)
+		if packet.GetCmd() != protocol.Cmd_CBeat {
+			tLog.Debug("packet.GetCmd()=", packet.GetCmd())
 		}
 
-		agentHandle := AgentCodeTable[msg.MsgType] //未登录业务处理
+		agentHandle := AgentCodeTable[packet.GetCmd()] //未登录业务处理
 		if agentHandle.Handler != nil {
-			agentHandle.Handler(a, msg.MsgData)
+			agentHandle.Handler(a, packet.GetCmd())
 		} else {
 
 			if a.session != nil && a.auth {
@@ -72,7 +68,6 @@ func (a *agent) Run() {
 			}
 		}
 
-		copy(packet, packet[n:])
 	}
 }
 

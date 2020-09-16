@@ -1,7 +1,7 @@
 package impl
 
 import (
-	"game_server/base"
+	"kk_server/base"
 	"net/http"
 	"sync"
 
@@ -51,7 +51,7 @@ func (h *WSHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	h.conns[conn] = struct{}{}
 	h.mt.Unlock()
 
-	wsConn := net.NewWSConn(conn, h.maxMsgLen)
+	wsConn := network.NewWSConn(conn, h.maxMsgLen)
 	agent := h.newAgent(wsConn)
 	agent.Run()
 

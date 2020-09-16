@@ -5,8 +5,6 @@ import (
 	"kk_server/impl"
 	"log"
 	"net/http"
-
-	"github.com/hhq163/kk_core/base"
 )
 
 func main() {

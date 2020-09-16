@@ -1,7 +1,7 @@
 package impl
 
 import (
-	"game_server/base"
+	"kk_server/base"
 	"net/http"
 	"time"
 

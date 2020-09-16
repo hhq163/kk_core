@@ -10,6 +10,8 @@ enum Cmd {
 	SSecretKey = 3;  // 服务端响应秘钥
 	CLogin     = 4;  // 客户端登录请求
 	SLogin     = 5;  // 服务端响应请求
+	CGetAmount = 6;
+	SGetAmount = 7;
 }
 
 // 服务端响应状态码
@@ -35,4 +37,12 @@ message ServerLogin {
     int32  Code = 1;//返回状态，0：成功，其他失败,需要跳转到登录界面
     string Uid = 2;//对应的后端uid
     string GameToken = 3;//游戏生成的token，用于断线重连使用
+}
+
+message CGetAmount{
+	string Uid = 1;
+}
+
+message SGetAmount{
+	string Uid = 1;
 }
