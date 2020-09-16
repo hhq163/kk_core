@@ -29,6 +29,8 @@ github.com/gorilla/websocket v1.4.2 h1:+/TMaTYc4QFitKJxsQ7Yye35DkWvkdLcvGKqM+x0U
 github.com/gorilla/websocket v1.4.2/go.mod h1:YR8l580nyteQvAITg2hZ9XVh4b55+EU/adAjf1fMHhE=
 github.com/hhq163/kk_core v0.0.0-20200820023552-3ac4ff8de243 h1:lHz40Paa1v15B95JegTcZ5uBdCMaiEPRkOg0exU2elQ=
 github.com/hhq163/kk_core v0.0.0-20200820023552-3ac4ff8de243/go.mod h1:lpPJHKI1UrqvMigERdpP15O2MdtYsBdWURppRJ1Wca8=
+github.com/hhq163/kk_core v0.0.0-20200916120415-18513197050f h1:ZfNhmUXTnQ1T8J5hObXzwnt4DYbW2u73p90jV+sNMTo=
+github.com/hhq163/kk_core v0.0.0-20200916120415-18513197050f/go.mod h1:lpPJHKI1UrqvMigERdpP15O2MdtYsBdWURppRJ1Wca8=
 github.com/hhq163/logger v1.0.2/go.mod h1:Ycikh5SSvyFzqBtlcwaDAPaNa9uyI8aYvLzpG6URIVA=
 github.com/hhq163/logger v1.0.3 h1:xRuA2JeQR/VfTjDPF3/TlfK8tdTM4MJ2kukCGn9XOW4=
 github.com/hhq163/logger v1.0.3/go.mod h1:nO7gT4B1CqvX7lDg0gfzYMUsW8Mj0rB7cfpiEX2TNM8=

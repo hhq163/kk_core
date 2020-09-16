@@ -16,7 +16,7 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-const mLen uint32 = 4 //长度占用的字节数
+const wsmLen uint32 = 4 //长度占用的字节数
 
 type WSConn struct {
 	conn       *websocket.Conn
@@ -100,15 +100,15 @@ func (w *WSConn) ReadMsg() (common.IPacket, error) {
 	if err != nil {
 		return nil, err
 	}
-	w.Crypt.DecryptRecv(b[:mLen+2])
-	msgLen := int(binary.LittleEndian.Uint16(b[:mLen]))
-	cmdId := binary.LittleEndian.Uint16(b[mLen:2])
+	w.Crypt.DecryptRecv(b[:wsmLen+2])
+	msgLen := int(binary.LittleEndian.Uint16(b[:wsmLen]))
+	cmdId := binary.LittleEndian.Uint16(b[wsmLen:2])
 	if msgLen != len(b) {
 		return nil, errors.New("收到ws数据长度错误")
 	}
 	packet := &common.Packet{}
 	packet.Initialize(cmdId)
-	packet.WriteBytes(b[mLen+2:])
+	packet.WriteBytes(b[wsmLen+2:])
 	return packet, err
 }
 
@@ -116,7 +116,7 @@ func (w *WSConn) WriteMsg(packet common.IPacket) error {
 	if w.IsClosed() {
 		return errors.New("socket is closed")
 	}
-	msgLen := uint16(packet.Len() + int(mLen) + 2)
+	msgLen := uint16(packet.Len() + int(wsmLen) + 2)
 	header := new(bytes.Buffer)
 	binary.Write(header, binary.LittleEndian, msgLen)
 	binary.Write(header, binary.LittleEndian, packet.GetCmd())
