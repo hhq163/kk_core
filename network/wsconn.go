@@ -102,7 +102,7 @@ func (w *WSConn) ReadMsg() (common.IPacket, error) {
 	}
 	w.Crypt.DecryptRecv(b[:wsmLen+2])
 	msgLen := int(binary.LittleEndian.Uint16(b[:wsmLen]))
-	cmdId := binary.LittleEndian.Uint16(b[wsmLen:2])
+	cmdId := binary.LittleEndian.Uint16(b[wsmLen : wsmLen+2])
 	if msgLen != len(b) {
 		return nil, errors.New("收到ws数据长度错误")
 	}
