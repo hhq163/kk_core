@@ -18,7 +18,7 @@ type Config struct {
 	WSAddr      string        `yaml:"WSAddr"`
 	TCPAddr     string        `yaml:"TCPAddr"`
 	MaxConnNum  int           `yaml:"MaxConnNum"`
-	HTTPTimeout time.Duration `yaml:"HTTPTimeout"`
+	HttpTimeout time.Duration `yaml:"HTTPTimeout"`
 
 	MaxMsgLen  uint32 `yaml:"MaxMsgLen"`
 	CertFile   string `yaml:"CertFile"`

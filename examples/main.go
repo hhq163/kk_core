@@ -14,7 +14,7 @@ func main() {
 
 	socketmgr := new(impl.SocketMgr)
 	socketmgr.Init()
-	message.Start()
+	impl.Start()
 
 }
 

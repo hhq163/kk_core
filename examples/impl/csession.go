@@ -99,19 +99,19 @@ func (s *CSession) Close() {
 	})
 }
 
-func (s *CSession) handler(msg util.IPacket) {
+func (s *CSession) handler(msg common.IPacket) {
 	tLog := base.Log.With(logger.FuncName, "(s *CSession) handler()")
 	defer func() {
 		if p := recover(); p != nil {
 			tLog.Error("CSession panic err: ", p)
 		}
 	}()
-	tLog.Debug("CSession handler() msg.GetCmd()=", msg.MsgType, ",userid=", s.UserId)
+	tLog.Debug("CSession handler() msg.GetCmd()=", msg.GetCmd(), ",userid=", s.UserId)
 	opHandle := OpCodeTable[msg.GetCmd()]
 	if opHandle.Handler != nil {
 		opHandle.Handler(s, msg)
 	} else {
-		tLog.Error("unknown opcode", msg.MsgType)
+		tLog.Error("unknown opcode", msg.GetCmd())
 	}
 }
 

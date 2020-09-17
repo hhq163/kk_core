@@ -1,7 +1,6 @@
 package impl
 
 import (
-	"kk_server/base"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -14,7 +13,7 @@ const SCHED_SLEEP_CONST = int64(50 * time.Millisecond)
 var Sched = NewSched()
 
 type Scheduler struct {
-	sessList      map[uint32]*CSession
+	sessList      map[int64]*CSession
 	addReconQueue *util.SyncQueue
 	stopEvent     int32
 	wg            sync.WaitGroup
@@ -23,7 +22,7 @@ type Scheduler struct {
 func NewSched() *Scheduler {
 	return &Scheduler{
 		addReconQueue: util.NewSyncQueue(),
-		sessList:      make(map[uint32]*CSession),
+		sessList:      make(map[int64]*CSession),
 	}
 }
 
@@ -76,7 +75,7 @@ func Destroy() {
 //整体调度
 func (s *Scheduler) Update() {
 	s.updateSessions()
-	base.WorldList.SyncProcess()
+	WorldList.SyncProcess()
 }
 
 //调度所有的session消息
@@ -90,14 +89,12 @@ func (s *Scheduler) updateSessions() {
 
 func (s *Scheduler) addSession(cs *CSession) bool {
 	var ret bool
-	if session, ok := w.sessList[cs.Uid]; ok {
-		//挤用户下线
-		// msg := &proto.S2CMessage{
-		// 	MsgType: proto.MSG_LOGINANOTHER,
-		// }
-		delete(w.sessList, id)
+	if _, ok := s.sessList[cs.UserId]; ok {
+		//发送挤用户下线消息
+
+		delete(s.sessList, cs.UserId)
 	}
-	w.sessList[cs.Uid] = cs
+	s.sessList[cs.UserId] = cs
 
 	return ret
 

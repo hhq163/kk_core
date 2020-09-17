@@ -1,11 +1,13 @@
 package impl
 
 import (
+	"kk_server/protocol"
+
 	"github.com/hhq163/kk_core/common"
 )
 
-var OpCodeTable = make(map[string]OpCodeHandler, 0)
-var AgentCodeTable = make(map[string]AgentHandler, 0)
+var OpCodeTable = make(map[uint16]OpCodeHandler, 0)
+var AgentCodeTable = make(map[uint16]AgentHandler, 0)
 
 const (
 	STATUS_NOT_AUTHED = 0
@@ -27,9 +29,9 @@ type AgentHandler struct {
 }
 
 func init() {
-	OpCodeTable[protocol.MSG_GET_AMOUNT] = OpCodeHandler{"MSG_GET_AMOUNT", STATUS_AUTHED, (*CSession).HandleGetAmount}
+	// OpCodeTable[protocol.MSG_GET_AMOUNT] = OpCodeHandler{"MSG_GET_AMOUNT", STATUS_AUTHED, (*CSession).HandleGetAmount}
 
-	AgentCodeTable[proto.Cmd_CBeat] = AgentHandler{"Cmd_CBeat", STATUS_NOT_AUTHED, (*agent).HandleHEARTBEAT}
-	AgentCodeTable[protocol.Cmd_CLogin] = AgentHandler{"Cmd_CLogin", STATUS_NOT_AUTHED, (*agent).HandleLogin}
+	AgentCodeTable[uint16(protocol.Cmd_CBeat)] = AgentHandler{"Cmd_CBeat", STATUS_NOT_AUTHED, (*agent).HandleHEARTBEAT}
+	AgentCodeTable[uint16(protocol.Cmd_CLogin)] = AgentHandler{"Cmd_CLogin", STATUS_NOT_AUTHED, (*agent).HandleLogin}
 
 }
