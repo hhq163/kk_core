@@ -29,7 +29,7 @@ type AgentHandler struct {
 }
 
 func init() {
-	// OpCodeTable[protocol.MSG_GET_AMOUNT] = OpCodeHandler{"MSG_GET_AMOUNT", STATUS_AUTHED, (*CSession).HandleGetAmount}
+	// OpCodeTable[uint16(protocol.MSG_GET_AMOUNT)] = OpCodeHandler{"MSG_GET_AMOUNT", STATUS_AUTHED, (*CSession).HandleGetAmount}
 
 	AgentCodeTable[uint16(protocol.Cmd_CBeat)] = AgentHandler{"Cmd_CBeat", STATUS_NOT_AUTHED, (*agent).HandleHEARTBEAT}
 	AgentCodeTable[uint16(protocol.Cmd_CLogin)] = AgentHandler{"Cmd_CLogin", STATUS_NOT_AUTHED, (*agent).HandleLogin}

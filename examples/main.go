@@ -12,6 +12,7 @@ func main() {
 
 	base.LogInit(true, "kk_server")
 
+	base.Log.Info("server started")
 	socketmgr := new(impl.SocketMgr)
 	socketmgr.Init()
 	impl.Start()

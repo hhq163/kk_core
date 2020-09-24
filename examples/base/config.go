@@ -29,7 +29,7 @@ type Config struct {
 func init() {
 
 	//ReadFile函数会读取文件的全部内容，并将结果以[]
-	filename := GetExecpath() + "/server.yaml"
+	filename := GetExecpath() + "/server.yml"
 	data, err := ioutil.ReadFile(filename)
 	if err != nil {
 		log.Fatal("读取配置文件错误")
