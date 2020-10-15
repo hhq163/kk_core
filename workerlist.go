@@ -1,33 +1,11 @@
 package kk_core
 
 import (
+	"log"
 	"sync"
 
 	"github.com/hhq163/kk_core/util"
 )
-
-//根据uid进行投递任务，同一用户任务顺序执行
-type WorkerGroup struct {
-	WorkGroup []*WorkerList
-	Length    int
-}
-
-func NewWorkGroup(groupNum int) *WorkerGroup {
-	wg := &WorkerGroup{
-		WorkGroup: make([]*WorkerList, groupNum),
-		Length:    groupNum,
-	}
-	for k := range wg.WorkGroup {
-		wg.WorkGroup[k] = NewWorkerList(1)
-	}
-
-	return wg
-}
-
-func (wg *WorkerGroup) Push(uid int, f func()) {
-	index := uid % wg.Length
-	wg.WorkGroup[index].Push(f)
-}
 
 type WorkerList struct {
 	works *util.SyncQueue
@@ -77,5 +55,62 @@ func (w *WorkerList) Close() {
 	w.wg.Wait()
 	if w.pool != nil {
 		w.pool.Shutdown()
+	}
+}
+
+//根据uid进行投递任务，同一用户任务顺序执行
+type WorkerGroup struct {
+	WorkGroup []*OrderWorkerList
+	Length    int
+}
+
+func NewWorkGroup(groupNum int) *WorkerGroup {
+	wg := &WorkerGroup{
+		WorkGroup: make([]*OrderWorkerList, groupNum),
+		Length:    groupNum,
+	}
+	for k := range wg.WorkGroup {
+		wg.WorkGroup[k] = NewOrderWorkerList()
+	}
+
+	return wg
+}
+
+func (wg *WorkerGroup) Push(uid int, f func()) {
+	index := uid % wg.Length
+	wg.WorkGroup[index].Push(f)
+}
+
+type OrderWorkerList struct {
+	works *util.SyncQueue
+	wg    sync.WaitGroup
+}
+
+func NewOrderWorkerList() *OrderWorkerList {
+	w := &OrderWorkerList{
+		works: util.NewSyncQueue(),
+	}
+	w.wg.Add(1)
+	go w.Process()
+
+	return w
+}
+
+func (w *OrderWorkerList) Push(f func()) {
+	w.works.Push(f)
+}
+
+func (w *OrderWorkerList) Process() {
+	defer w.wg.Done()
+	for {
+		f := w.works.Pop()
+		if f == nil {
+			return
+		}
+		if fun, ok := f.(func()); ok {
+			fun()
+		} else {
+			log.Println("msg is not func")
+		}
 	}
 }
