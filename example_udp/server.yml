@@ -1,5 +1,5 @@
 LogLevel:   "Info"
-WSAddr:     "0.0.0.0:8086"
+UdpAddr:     "0.0.0.0:8086"
 TCPAddr:    "0.0.0.0:8085"
 MaxConnNum:   100000
 HTTPTimeout:  10

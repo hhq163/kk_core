@@ -15,7 +15,7 @@ var Cfg Config
 
 type Config struct {
 	LogLevel    string        `yaml:"LogLevel"`
-	WSAddr      string        `yaml:"WSAddr"`
+	UdpAddr     string        `yaml:"UdpAddr"`
 	TCPAddr     string        `yaml:"TCPAddr"`
 	MaxConnNum  int           `yaml:"MaxConnNum"`
 	HttpTimeout time.Duration `yaml:"HTTPTimeout"`
