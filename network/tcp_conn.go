@@ -17,9 +17,6 @@ import (
 	"github.com/hhq163/kk_core/util"
 )
 
-//ConnSet server conn map
-type ConnSet map[net.Conn]struct{}
-
 const mLen uint32 = 4 //长度占用的字节数
 
 //TCPConn tcp连接类

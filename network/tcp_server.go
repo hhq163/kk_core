@@ -8,6 +8,9 @@ import (
 	"github.com/hhq163/kk_core/base"
 )
 
+//ConnSet server conn map
+type ConnSet map[net.Conn]struct{}
+
 //TCPServer TCP server manager
 type TCPServer struct {
 	Addr       string
@@ -23,22 +26,25 @@ type TCPServer struct {
 
 //Start start server
 func (server *TCPServer) Start() {
-	server.init()
+	server.Init()
 	go server.run()
 }
 
-func (server *TCPServer) init() {
+func (server *TCPServer) Init() {
 	ln, err := net.Listen("tcp", server.Addr)
 	if err != nil {
 		base.Log.Fatal(err)
+		return
 	}
 
 	if server.MaxConnNum <= 0 {
 		server.MaxConnNum = 10000
 		base.Log.Info("invalid MaxConnNum, reset to ", server.MaxConnNum)
+		return
 	}
 	if server.NewAgent == nil {
 		base.Log.Fatal("NewAgent must not be nil")
+		return
 	}
 
 	server.ln = ln
