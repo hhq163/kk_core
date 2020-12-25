@@ -15,10 +15,10 @@ import (
 )
 
 //UDP虚拟连接类
-type UdpVconn struct {
-	connkey    ConnKey
+type UDPVconn struct {
+	uid        uint32
 	remote     *net.UDPAddr
-	UdpConn    *net.UDPConn
+	UDPConn    *net.UDPConn
 	writeQueue *util.SyncQueue
 	csession   Sess
 
@@ -28,11 +28,11 @@ type UdpVconn struct {
 	Crypt      auth.AuthCrypt
 }
 
-func newUdpVconn(connkey ConnKey, maxMsgLen uint32, udpConn *net.UDPConn, remote *net.UDPAddr) *UdpVconn {
-	udpVconn := &UdpVconn{
-		connkey:    connkey,
+func newUDPVconn(uid uint32, maxMsgLen uint32, udpConn *net.UDPConn, remote *net.UDPAddr) *UDPVconn {
+	udpVconn := &UDPVconn{
+		uid:        uid,
 		remote:     remote,
-		UdpConn:    udpConn,
+		UDPConn:    udpConn,
 		writeQueue: util.NewSyncQueue(),
 		maxMsgLen:  maxMsgLen,
 		activeTime: time.Now().Unix(),
@@ -68,19 +68,19 @@ func newUdpVconn(connkey ConnKey, maxMsgLen uint32, udpConn *net.UDPConn, remote
 	return udpVconn
 }
 
-func (u *UdpVconn) IsClosed() bool {
+func (u *UDPVconn) IsClosed() bool {
 	return atomic.LoadInt32(&u.closeFlag) == 1
 }
 
-func (u *UdpVconn) Close() {
+func (u *UDPVconn) Close() {
 	u.writeQueue.Close()
 }
 
-func (u *UdpVconn) Write(b []byte) {
+func (u *UDPVconn) Write(b []byte) {
 	u.writeQueue.Push(b)
 }
 
-func (u *UdpVconn) ReadMsg(b []byte) (err error) {
+func (u *UDPVconn) ReadMsg(b []byte) (err error) {
 	cmd := binary.LittleEndian.Uint16(b[:2])
 	msgLen := int(binary.LittleEndian.Uint16(b[2:4]))
 
@@ -92,15 +92,18 @@ func (u *UdpVconn) ReadMsg(b []byte) (err error) {
 	packet.Initialize(cmd)
 	packet.WriteBytes(b[4:])
 
-	u.csession.QueuePacket(packet)
 	return nil
 }
 
-func (u *UdpVconn) DirectWrite(b []byte) {
-	u.UdpConn.Write(b)
+func (u *UDPVconn) QueuePacket(msg common.IPacket) {
+	u.csession.QueuePacket(msg)
 }
 
-func (u *UdpVconn) WriteMsg(packet common.IPacket) error {
+func (u *UDPVconn) DirectWrite(b []byte) {
+	u.UDPConn.Write(b)
+}
+
+func (u *UDPVconn) WriteMsg(packet common.IPacket) error {
 	if u.IsClosed() {
 		return errors.New("udp conn is closed")
 	}
@@ -114,7 +117,7 @@ func (u *UdpVconn) WriteMsg(packet common.IPacket) error {
 	return nil
 }
 
-func (u *UdpVconn) IsTimeout(maxTime uint32) bool {
+func (u *UDPVconn) IsTimeout(maxTime uint32) bool {
 	var ret bool
 	cur := uint32(time.Now().Unix() - u.activeTime)
 	if cur > maxTime {

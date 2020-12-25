@@ -249,41 +249,41 @@ type Packet struct {
 }
 
 //Initialize 初始化操作数
-func (packet *Packet) Initialize(cmdId uint16) {
-	packet.buffer = new(bytes.Buffer)
-	packet.cmdId = cmdId
+func (p *Packet) Initialize(cmdId uint16) {
+	p.buffer = new(bytes.Buffer)
+	p.cmdId = cmdId
 }
 
 //GetOpCode 操作数
-func (packet *Packet) GetCmd() uint16 {
-	return packet.cmdId
+func (p *Packet) GetCmd() uint16 {
+	return p.cmdId
 }
-func (packet *Packet) WriteBytes(p []byte) {
-	packet.buffer.Write(p)
+func (p *Packet) WriteBytes(b []byte) {
+	p.buffer.Write(b)
 }
 
-func (packet *Packet) WriteData(data interface{}) {
+func (p *Packet) WriteData(data interface{}) {
 	v := reflect.Indirect(reflect.ValueOf(data))
-	encode(packet.buffer, v)
+	encode(p.buffer, v)
 }
 
-func (packet *Packet) ReadData(data interface{}) error {
+func (p *Packet) ReadData(data interface{}) error {
 	v := reflect.ValueOf(data)
-	return decode(packet.buffer, v)
+	return decode(p.buffer, v)
 }
 
-func (packet *Packet) Len() int {
-	return packet.buffer.Len()
+func (p *Packet) Len() int {
+	return p.buffer.Len()
 }
 
-func (packet *Packet) Bytes() []byte {
-	return packet.buffer.Bytes()
+func (p *Packet) Bytes() []byte {
+	return p.buffer.Bytes()
 }
 
-func (packet *Packet) GetBuffer() *bytes.Buffer {
-	return packet.buffer
+func (p *Packet) GetBuffer() *bytes.Buffer {
+	return p.buffer
 }
 
-func (packet *Packet) SetBuffer(b *bytes.Buffer) {
-	packet.buffer = b
+func (p *Packet) SetBuffer(b *bytes.Buffer) {
+	p.buffer = b
 }

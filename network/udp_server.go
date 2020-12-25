@@ -2,25 +2,29 @@ package network
 
 import (
 	"encoding/binary"
+	"errors"
+	"log"
 	"net"
+	"strconv"
 	"sync"
 
 	"github.com/hhq163/kk_core/base"
+	"github.com/hhq163/kk_core/common"
 )
 
-type UdpConnSet map[ConnKey]struct{}
+// type UdpConnSet map[ConnKey]struct{}
 
 type UDPServer struct {
 	Addr      string
-	NewSess   func(*UdpVconn) Sess
+	NewSess   func(*UDPVconn) Sess
 	MaxMsgLen uint32
-	UdpConn   *net.UDPConn
+	UDPConn   *net.UDPConn
 
 	mutexConns sync.Mutex
 	wgLn       sync.WaitGroup
 	wgConns    sync.WaitGroup
 
-	udpVconns map[ConnKey]*UdpVconn
+	udpVconns map[uint32]*UDPVconn
 }
 
 func (u *UDPServer) Start() {
@@ -41,8 +45,8 @@ func (u *UDPServer) Init() {
 		return
 	}
 
-	u.UdpConn = udpConn
-	u.udpVconns = make(map[ConnKey]*UdpVconn)
+	u.UDPConn = udpConn
+	u.udpVconns = make(map[uint32]*UDPVconn)
 }
 
 func (u *UDPServer) run() {
@@ -52,23 +56,48 @@ func (u *UDPServer) run() {
 	recvBuff := make([]byte, u.MaxMsgLen)
 
 	for {
-		n, remoteAddr, err := u.UdpConn.ReadFromUDP(recvBuff)
+		n, remoteAddr, err := u.UDPConn.ReadFromUDP(recvBuff)
 		if err != nil {
-			base.Log.Error("UdpConn.ReadFromUDP err=", err.Error())
+			base.Log.Error("UDPConn.ReadFromUDP err=", err.Error())
 			break
 		}
 
 		if n > 0 {
-			UdpVconn := u.getVTcpConn(remoteAddr)
+			packet, err := u.parseHeader(recvBuff[:n])
+			if err != nil {
+				base.Log.Error("packet parseHeader err=", err.Error())
+				continue
+			}
+			UDPVconn := u.getVTcpConn(remoteAddr, packet.GetUserId())
 
-			UdpVconn.ReadMsg(recvBuff[:n])
+			UDPVconn.QueuePacket(packet)
 		}
 	}
 }
 
+//消息头解析
+func (u *UDPServer) parseHeader(b []byte) (p *common.UdpPacket, err error) {
+	if len(b) < 6 {
+		return nil, errors.New("package is to short")
+	}
+	cmd := binary.LittleEndian.Uint32(b[:4])
+	msgLen := int(binary.LittleEndian.Uint32(b[4:8]))
+	uid := binary.LittleEndian.Uint32(b[8:12])
+
+	if msgLen > len(b) {
+		log.Print("message too long from " + strconv.Itoa(int(uid)))
+		return nil, errors.New("message too long from " + strconv.Itoa(int(uid)))
+	}
+	packet := &common.UdpPacket{}
+	packet.Init(cmd, uid)
+	packet.WriteBytes(b[4:])
+
+	return packet, nil
+}
+
 func (u *UDPServer) Close() {
-	if u.UdpConn != nil {
-		u.UdpConn.Close()
+	if u.UDPConn != nil {
+		u.UDPConn.Close()
 	}
 	u.wgLn.Wait()
 
@@ -76,17 +105,16 @@ func (u *UDPServer) Close() {
 	u.wgConns.Wait()
 }
 
-func (u *UDPServer) getVTcpConn(addr *net.UDPAddr) *UdpVconn {
-	key := genConnKey(addr)
-	var udpVconn *UdpVconn
-	if _, ok := u.udpVconns[key]; ok {
-		udpVconn = u.udpVconns[key]
+func (u *UDPServer) getVTcpConn(addr *net.UDPAddr, uid uint32) *UDPVconn {
+	var udpVconn *UDPVconn
+	if _, ok := u.udpVconns[uid]; ok {
+		udpVconn = u.udpVconns[uid]
 	} else {
-		udpVconn = newUdpVconn(key, u.MaxMsgLen, u.UdpConn, addr)
+		udpVconn = newUDPVconn(uid, u.MaxMsgLen, u.UDPConn, addr)
 		sess := u.NewSess(udpVconn)
 		udpVconn.csession = sess
 
-		u.udpVconns[key] = udpVconn
+		u.udpVconns[uid] = udpVconn
 	}
 	return udpVconn
 }
