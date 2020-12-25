@@ -68,6 +68,9 @@ func newUDPVconn(uid uint32, maxMsgLen uint32, udpConn *net.UDPConn, remote *net
 	return udpVconn
 }
 
+func (u *UDPVconn) UpdateRemote(r *net.UDPAddr) {
+	u.remote = r
+}
 func (u *UDPVconn) IsClosed() bool {
 	return atomic.LoadInt32(&u.closeFlag) == 1
 }

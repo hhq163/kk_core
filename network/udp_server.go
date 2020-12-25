@@ -109,6 +109,7 @@ func (u *UDPServer) getVTcpConn(addr *net.UDPAddr, uid uint32) *UDPVconn {
 	var udpVconn *UDPVconn
 	if _, ok := u.udpVconns[uid]; ok {
 		udpVconn = u.udpVconns[uid]
+		udpVconn.UpdateRemote(addr)
 	} else {
 		udpVconn = newUDPVconn(uid, u.MaxMsgLen, u.UDPConn, addr)
 		sess := u.NewSess(udpVconn)
