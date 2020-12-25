@@ -16,12 +16,12 @@ const MaxTime = 2 * 60 //保活最大间隔2分钟
 type CSession struct {
 	UserId     int64
 	recvQueue  *util.SyncQueue
-	conn       *network.UdpVconn
+	conn       *network.UDPVconn
 	logoutTime int64
 	once       sync.Once
 }
 
-func NewCSession(udpConn *network.UdpVconn) *CSession {
+func NewCSession(udpConn *network.UDPVconn) *CSession {
 	cs := &CSession{
 		recvQueue: util.NewSyncQueue(),
 		conn:      udpConn,

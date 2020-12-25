@@ -16,7 +16,7 @@ func (mgr *VConnMgr) Init() {
 		mgr.udpServer = new(network.UDPServer)
 		mgr.udpServer.Addr = base.Cfg.UdpAddr
 		mgr.udpServer.MaxMsgLen = base.Cfg.MaxMsgLen
-		mgr.udpServer.NewSess = func(udpVconn *network.UdpVconn) network.Sess {
+		mgr.udpServer.NewSess = func(udpVconn *network.UDPVconn) network.Sess {
 			u := NewCSession(udpVconn)
 			return u
 		}

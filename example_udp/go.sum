@@ -31,6 +31,8 @@ github.com/hhq163/kk_core v0.0.0-20200924114622-3b96b0e489c0 h1:+DLr6zXYPKFqrTPZ
 github.com/hhq163/kk_core v0.0.0-20200924114622-3b96b0e489c0/go.mod h1:lpPJHKI1UrqvMigERdpP15O2MdtYsBdWURppRJ1Wca8=
 github.com/hhq163/kk_core v0.0.0-20201224081857-7ad8b58614d2 h1:3bHPMXOcgqKNVgPHyenpjeQmvoihdNLegbDopA7hRlQ=
 github.com/hhq163/kk_core v0.0.0-20201224081857-7ad8b58614d2/go.mod h1:lpPJHKI1UrqvMigERdpP15O2MdtYsBdWURppRJ1Wca8=
+github.com/hhq163/kk_core v0.0.0-20201225032142-a4df0fe2cd0a h1:JSObWdGQ+WPytGiC1hQx6YaaWH5oTVnSt5960gB7LSI=
+github.com/hhq163/kk_core v0.0.0-20201225032142-a4df0fe2cd0a/go.mod h1:lpPJHKI1UrqvMigERdpP15O2MdtYsBdWURppRJ1Wca8=
 github.com/hhq163/logger v1.0.2/go.mod h1:Ycikh5SSvyFzqBtlcwaDAPaNa9uyI8aYvLzpG6URIVA=
 github.com/hhq163/logger v1.0.3 h1:xRuA2JeQR/VfTjDPF3/TlfK8tdTM4MJ2kukCGn9XOW4=
 github.com/hhq163/logger v1.0.3/go.mod h1:nO7gT4B1CqvX7lDg0gfzYMUsW8Mj0rB7cfpiEX2TNM8=
