@@ -80,6 +80,10 @@ func (u *UDPVconn) Write(b []byte) {
 	u.writeQueue.Push(b)
 }
 
+func (u *UDPVconn) GetUID() uint32 {
+	return u.uid
+}
+
 func (u *UDPVconn) ReadMsg(b []byte) (err error) {
 	cmd := binary.LittleEndian.Uint16(b[:2])
 	msgLen := int(binary.LittleEndian.Uint16(b[2:4]))
