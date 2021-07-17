@@ -25,20 +25,23 @@ type TCPServer struct {
 }
 
 //Start start server
-func (server *TCPServer) Start() {
-	server.Init()
+func (server *TCPServer) Start(maxConnNum int) {
+	server.Init(maxConnNum)
 	go server.run()
 }
 
-func (server *TCPServer) Init() {
+func (server *TCPServer) Init(maxConnNum int) {
 	ln, err := net.Listen("tcp", server.Addr)
 	if err != nil {
 		base.Log.Fatal(err)
 		return
 	}
+	if maxConnNum == 0 {
+		maxConnNum = 10000
+	}
 
 	if server.MaxConnNum <= 0 {
-		server.MaxConnNum = 10000
+		server.MaxConnNum = maxConnNum
 		base.Log.Info("invalid MaxConnNum, reset to ", server.MaxConnNum)
 		return
 	}
