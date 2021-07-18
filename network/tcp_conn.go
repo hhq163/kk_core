@@ -29,7 +29,7 @@ type TCPConn struct {
 	Crypt      auth.AuthCrypt
 }
 
-func newTCPConn(conn net.Conn, maxMsgLen uint32) *TCPConn {
+func NewTCPConn(conn net.Conn, maxMsgLen uint32) *TCPConn {
 	tcpConn := new(TCPConn)
 	tcpConn.conn = conn
 	tcpConn.writeQueue = util.NewSyncQueue()

@@ -2,60 +2,25 @@ package network
 
 import (
 	"net"
-	"sync"
 	"time"
 
 	"github.com/hhq163/kk_core/base"
+	"github.com/hhq163/svr_core/network"
 )
 
 type TCPClient struct {
-	sync.Mutex
 	Addr            string
-	ConnNum         int
 	ConnectInterval time.Duration
 	AutoReconnect   bool
-	NewAgent        func(*TCPConn) Agent
-	conns           ConnSet
-	wg              sync.WaitGroup
+	tcpConn         *TCPConn
 	closeFlag       bool
-
-	// msg parser
-	LenMsgLen    int
-	MinMsgLen    uint32
-	MaxMsgLen    uint32
-	LittleEndian bool
 }
 
-func (client *TCPClient) Start() {
-	client.init()
-
-	for i := 0; i < client.ConnNum; i++ {
-		client.wg.Add(1)
-		go client.connect()
-	}
-}
-
-func (client *TCPClient) init() {
-	client.Lock()
-	defer client.Unlock()
-
-	if client.ConnNum <= 0 {
-		client.ConnNum = 1
-		base.Log.Info("invalid ConnNum, reset to ", client.ConnNum)
-	}
-	if client.ConnectInterval <= 0 {
-		client.ConnectInterval = 3 * time.Second
-		base.Log.Info("invalid ConnectInterval, reset to ", client.ConnectInterval)
-	}
-	if client.NewAgent == nil {
-		base.Log.Fatal("NewAgent must not be nil")
-	}
-	if client.conns != nil {
-		base.Log.Fatal("client is running")
-	}
-
-	client.conns = make(ConnSet)
-	client.closeFlag = false
+func NewTCPClient(addr string) {
+	client := new(network.TCPClient)
+	client.Addr = addr
+	client.AutoReconnect = true
+	client.ConnectInterval = 3 * time.Second
 }
 
 func (client *TCPClient) dial() net.Conn {
@@ -72,32 +37,18 @@ func (client *TCPClient) dial() net.Conn {
 }
 
 func (client *TCPClient) connect() {
-	defer client.wg.Done()
 
 reconnect:
 	conn := client.dial()
 	if conn == nil {
+		base.Log.Info("client.dial return nil")
 		return
 	}
+	client.tcpConn = NewTCPConn(conn, client.MaxMsgLen)
 
-	client.Lock()
-	if client.closeFlag {
-		client.Unlock()
-		conn.Close()
-		return
-	}
-	client.conns[conn] = struct{}{}
-	client.Unlock()
-
-	tcpConn := newTCPConn(conn, client.MaxMsgLen)
+	tcpConn := NewTCPConn(conn, client.MaxMsgLen)
 	agent := client.NewAgent(tcpConn)
-	agent.Run()
-
-	// cleanup
-	tcpConn.Close()
-	client.Lock()
-	delete(client.conns, conn)
-	client.Unlock()
+	client.Run()
 
 	if client.AutoReconnect {
 		time.Sleep(client.ConnectInterval)
@@ -105,16 +56,36 @@ reconnect:
 	}
 }
 
-func (client *TCPClient) Close() {
-	client.Lock()
-	client.closeFlag = true
-	for conn := range client.conns {
-		conn.Close()
-	}
-	client.conns = nil
-	client.Unlock()
+func (client *TCPClient) Run() {
+	go func() {
+		// PING := &common.WorldPacket{}
+		// PING.Initialize(CMSG_KEEP_ALIVE)
+		// for {
+		// 	if !a.conn.IsClosed() {
+		// 		a.conn.WriteMsg(PING)
+		// 	}
+		// 	time.Sleep(1 * time.Second)
+		// }
+	}()
 
-	client.wg.Wait()
+	for {
+		packet, err := a.conn.ReadMsg()
+		if err != nil {
+			slog.Error("register read err=", err)
+			return
+		}
+		// if packet.GetOpCode() < MSG_NULL_ACTION || packet.GetOpCode() > NUM_MSG_TYPES {
+		// 	slog.Info("Signal recv unknow opcode:", packet.GetOpCode())
+		// 	continue
+		// }
+		// sGameManager.QueuePacket(packet)
+	}
+}
+
+func (client *TCPClient) Close() {
+	client.closeFlag = true
+	client.tcpConn.Close()
+	client.tcpConn = nil
 }
 
 func (client *TCPClient) IsClosed() bool {

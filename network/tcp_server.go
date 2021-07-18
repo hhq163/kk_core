@@ -15,7 +15,7 @@ type ConnSet map[net.Conn]struct{}
 type TCPServer struct {
 	Addr       string
 	MaxConnNum int
-	NewAgent   func(*TCPConn) Agent
+	NewAgent   func(*Conn) Agent
 	MaxMsgLen  uint32
 	ln         net.Listener
 	conns      ConnSet
@@ -91,7 +91,7 @@ func (server *TCPServer) run() {
 
 		server.wgConns.Add(1)
 
-		tcpConn := newTCPConn(conn, server.MaxMsgLen)
+		tcpConn := NewTCPConn(conn, server.MaxMsgLen)
 		agent := server.NewAgent(tcpConn)
 		go func() {
 			agent.Run()
