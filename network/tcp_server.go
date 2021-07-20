@@ -15,7 +15,7 @@ type ConnSet map[net.Conn]struct{}
 type TCPServer struct {
 	Addr       string
 	MaxConnNum int
-	NewAgent   func(*Conn) Agent
+	NewAgent   func(Conn) Agent
 	MaxMsgLen  uint32
 	ln         net.Listener
 	conns      ConnSet
