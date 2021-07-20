@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/hhq163/kk_core/base"
-	"github.com/hhq163/svr_core/network"
+	"github.com/hhq163/kk_core/network"
 )
 
 type TCPClient struct {
