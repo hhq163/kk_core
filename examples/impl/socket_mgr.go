@@ -2,6 +2,7 @@ package impl
 
 import (
 	"kk_server/base"
+	"net"
 	"net/http"
 	"time"
 
@@ -23,8 +24,9 @@ func (mgr *SocketMgr) Init() {
 		mgr.wsServer.HTTPTimeout = base.Cfg.HttpTimeout * time.Second
 		mgr.wsServer.CertFile = base.Cfg.CertFile
 		mgr.wsServer.KeyFile = base.Cfg.KeyFile
-		mgr.wsServer.NewAgent = func(conn network.Conn) network.Agent {
-			a := &agent{conn: conn}
+		mgr.wsServer.NewAgent = func(conn net.Conn) network.Agent {
+			tcpConn := network.NewTCPConn(conn, base.Cfg.MaxMsgLen)
+			a := &agent{conn: tcpConn}
 			return a
 		}
 		mgr.wsServer.Handler = &WSHandler{
