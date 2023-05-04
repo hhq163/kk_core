@@ -3,7 +3,6 @@ package network
 import (
 	"net"
 	"sync"
-	"time"
 
 	"github.com/hhq163/kk_core/base"
 )
@@ -55,26 +54,15 @@ func (server *TCPServer) run() {
 	server.wgLn.Add(1)
 	defer server.wgLn.Done()
 
-	var tempDelay time.Duration
 	for {
 		conn, err := server.ln.Accept()
 		if err != nil {
 			if ne, ok := err.(net.Error); ok && ne.Temporary() {
-				if tempDelay == 0 {
-					tempDelay = 5 * time.Millisecond
-				} else {
-					tempDelay *= 2
-				}
-				if max := 1 * time.Second; tempDelay > max {
-					tempDelay = max
-				}
-				base.Log.Info("accept error: ", err, "; retrying in ", tempDelay)
-				time.Sleep(tempDelay)
+				base.Log.Info("accept temp err=", ne.Error())
 				continue
 			}
 			return
 		}
-		tempDelay = 0
 
 		server.mutexConns.Lock()
 		if len(server.conns) >= server.MaxConnNum {
