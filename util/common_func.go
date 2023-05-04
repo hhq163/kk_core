@@ -170,3 +170,10 @@ func RandStr(n int) string {
 	rand.Read(result)
 	return hex.EncodeToString(result)
 }
+
+// 获取当前程序运行目录
+func GetExecpath() string {
+	execpath, _ := os.Executable() // 获得程序路径
+	path := filepath.Dir(execpath)
+	return strings.Replace(path, "\\", "/", -1)
+}
