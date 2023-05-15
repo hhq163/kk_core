@@ -158,6 +158,47 @@ func ReliableGo(f interface{}, callback func(), clog *logger.Logger, args ...int
 	}()
 }
 
+//启动一个go协程，不记录日志到文件
+func InstanceGo(f interface{}, args ...interface{}) {
+	go func() {
+		defer func() {
+			if err := recover(); err != nil {
+				log.Fatalln("SafeGo func=", f, ",args=", args, ", err=", err, "stack()=", string(debug.Stack()))
+			}
+		}()
+
+		v1 := reflect.ValueOf(f)
+		params := make([]reflect.Value, len(args))
+		for k, v := range args {
+			params[k] = reflect.ValueOf(v)
+		}
+		v1.Call(params)
+	}()
+}
+
+//安全启动一个go协程，带回调函数，不记录日志到文件
+func CallbackGo(f interface{}, callback func(), args ...interface{}) {
+	go func() {
+		defer func() {
+			if err := recover(); err != nil {
+				if callback != nil {
+					callback()
+				}
+				time.Sleep(5 * time.Second)
+
+				log.Fatalln("SafeGo func=", f, ",args=", args, ", err=", err, "stack()=", string(debug.Stack()))
+			}
+		}()
+
+		v1 := reflect.ValueOf(f)
+		params := make([]reflect.Value, len(args))
+		for k, v := range args {
+			params[k] = reflect.ValueOf(v)
+		}
+		v1.Call(params)
+	}()
+}
+
 func StrToMd5(source string) string {
 	h := md5.New()
 	h.Write([]byte(source))
