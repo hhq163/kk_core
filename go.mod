@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/gorilla/websocket v1.5.0
 	github.com/hhq163/logger v1.0.5
-	github.com/smallnest/chanx v1.1.0
+	github.com/smallnest/chanx v1.0.0
 	gopkg.in/eapache/queue.v1 v1.1.0
 )
 
