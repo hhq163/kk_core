@@ -9,12 +9,15 @@ import (
 	"fmt"
 	"hash/crc32"
 	"io"
+	"log"
 	"net"
 	"os"
+	"path/filepath"
 	"reflect"
 	"regexp"
 	"runtime/debug"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/hhq163/logger"
@@ -114,7 +117,7 @@ func Long2ip(ip uint32) string {
 	return fmt.Sprintf("%d.%d.%d.%d", ip>>24, ip<<8>>24, ip<<16>>24, ip<<24>>24)
 }
 
-func SafeGo(f interface{}, clog *logger.Logger, args ...interface{}) {
+func SafeGo(f interface{}, clog logger.Logger, args ...interface{}) {
 	go func() {
 		defer func() {
 			if err := recover(); err != nil {
@@ -135,7 +138,7 @@ func SafeGo(f interface{}, clog *logger.Logger, args ...interface{}) {
 }
 
 //安全启动一个go协程，带回调函数
-func ReliableGo(f interface{}, callback func(), clog *logger.Logger, args ...interface{}) {
+func ReliableGo(f interface{}, callback func(), clog logger.Logger, args ...interface{}) {
 	go func() {
 		defer func() {
 			if err := recover(); err != nil {

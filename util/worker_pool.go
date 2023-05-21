@@ -14,14 +14,14 @@ type OrderWorkers struct {
 	works  []*OrderWorker
 	Length int32
 	wg     sync.WaitGroup
-	log    *logger.Logger
+	log    logger.Logger
 }
 
 /**
 * 	goNum: goroutine num
 * 	chanLen: the init length of goroutine chan
  */
-func NewOrderWorkers(goNum int32, chanLen int32, clog *logger.Logger) *OrderWorkers {
+func NewOrderWorkers(goNum int32, chanLen int32, clog logger.Logger) *OrderWorkers {
 	if goNum <= 0 {
 		return nil
 	}
